@@ -1,0 +1,18 @@
+[package]
+name = "rusty2048-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+description = "Core game logic for Rusty2048"
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+serde.workspace = true
+thiserror.workspace = true
+rand.workspace = true
+getrandom.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+criterion.workspace = true

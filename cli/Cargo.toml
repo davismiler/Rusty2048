@@ -1,0 +1,17 @@
+[package]
+name = "rusty2048-cli"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+description = "Command-line interface for Rusty2048"
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+rusty2048-core = { path = "../core" }
+crossterm.workspace = true
+ratatui.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+serde.workspace = true
+serde_json.workspace = true

@@ -1,0 +1,17 @@
+[package]
+name = "rusty2048-desktop"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+description = "Desktop application for Rusty2048"
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+rusty2048-core = { path = "../core" }
+tauri.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+[build-dependencies]
+tauri-build = "1.5"

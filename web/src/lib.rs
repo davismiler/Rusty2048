@@ -1,0 +1,70 @@
+use wasm_bindgen::prelude::*;
+use rusty2048_core::{Game, GameConfig, Direction};
+
+#[wasm_bindgen]
+pub struct Rusty2048Web {
+    game: Game,
+}
+
+#[wasm_bindgen]
+impl Rusty2048Web {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> Result<Rusty2048Web, JsValue> {
+        let config = GameConfig::default();
+        let game = Game::new(config).map_err(|e| JsValue::from_str(&e.to_string()))?;
+        Ok(Rusty2048Web { game })
+    }
+    
+    pub fn make_move(&mut self, direction: &str) -> Result<bool, JsValue> {
+        let dir = match direction {
+            "up" => Direction::Up,
+            "down" => Direction::Down,
+            "left" => Direction::Left,
+            "right" => Direction::Right,
+            _ => return Err(JsValue::from_str("Invalid direction")),
+        };
+        
+        self.game.make_move(dir).map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+    
+    pub fn get_board(&self) -> Result<JsValue, JsValue> {
+        let board = self.game.board();
+        let size = board.size();
+        let mut tiles = Vec::new();
+        
+        for row in 0..size {
+            for col in 0..size {
+                let tile = board.get_tile(row, col)
+                    .map_err(|e| JsValue::from_str(&e.to_string()))?;
+                tiles.push(tile.value);
+            }
+        }
+        
+        serde_wasm_bindgen::to_value(&tiles)
+            .map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+    
+    pub fn get_score(&self) -> Result<JsValue, JsValue> {
+        let score = self.game.score();
+        let score_data = serde_json::json!({
+            "current": score.current(),
+            "best": score.best(),
+            "last_move": score.last_move()
+        });
+        
+        serde_wasm_bindgen::to_value(&score_data)
+            .map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+    
+    pub fn get_state(&self) -> Result<String, JsValue> {
+        match self.game.state() {
+            rusty2048_core::GameState::Playing => Ok("playing".to_string()),
+            rusty2048_core::GameState::Won => Ok("won".to_string()),
+            rusty2048_core::GameState::GameOver => Ok("game_over".to_string()),
+        }
+    }
+    
+    pub fn new_game(&mut self) -> Result<(), JsValue> {
+        self.game.new_game().map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+}
