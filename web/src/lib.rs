@@ -1,18 +1,23 @@
 use wasm_bindgen::prelude::*;
 use rusty2048_core::{Game, GameConfig, Direction};
+use rusty2048_shared::Theme;
 
 #[wasm_bindgen]
 pub struct Rusty2048Web {
     game: Game,
+    theme: Theme,
 }
 
 #[wasm_bindgen]
 impl Rusty2048Web {
     #[wasm_bindgen(constructor)]
     pub fn new() -> Result<Rusty2048Web, JsValue> {
-        let config = GameConfig::default();
+        let mut config = GameConfig::default();
+        // Use a fixed seed for WASM to avoid entropy issues
+        config.seed = Some(42);
         let game = Game::new(config).map_err(|e| JsValue::from_str(&e.to_string()))?;
-        Ok(Rusty2048Web { game })
+        let theme = Theme::default();
+        Ok(Rusty2048Web { game, theme })
     }
     
     pub fn make_move(&mut self, direction: &str) -> Result<bool, JsValue> {
@@ -66,5 +71,52 @@ impl Rusty2048Web {
     
     pub fn new_game(&mut self) -> Result<(), JsValue> {
         self.game.new_game().map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+    
+    pub fn undo(&mut self) -> Result<(), JsValue> {
+        self.game.undo().map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+    
+    pub fn get_moves(&self) -> u32 {
+        self.game.moves()
+    }
+    
+    pub fn get_stats(&self) -> Result<JsValue, JsValue> {
+        let stats = self.game.stats();
+        let stats_data = serde_json::json!({
+            "duration": stats.duration,
+            "max_tile": self.game.board().max_tile(),
+            "moves": self.game.moves(),
+            "score": self.game.score().current(),
+            "best_score": self.game.score().best()
+        });
+        
+        serde_wasm_bindgen::to_value(&stats_data)
+            .map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+    
+    pub fn get_theme(&self) -> Result<JsValue, JsValue> {
+        serde_wasm_bindgen::to_value(&self.theme)
+            .map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+    
+    pub fn set_theme(&mut self, theme_name: &str) -> Result<(), JsValue> {
+        if let Some(theme) = Theme::by_name(theme_name) {
+            self.theme = theme;
+            Ok(())
+        } else {
+            Err(JsValue::from_str("Invalid theme name"))
+        }
+    }
+    
+    pub fn get_available_themes(&self) -> Result<JsValue, JsValue> {
+        let themes = Theme::all_themes();
+        let theme_names: Vec<String> = themes.iter().map(|t| t.name.clone()).collect();
+        serde_wasm_bindgen::to_value(&theme_names)
+            .map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+    
+    pub fn get_max_tile(&self) -> u32 {
+        self.game.board().max_tile()
     }
 }
