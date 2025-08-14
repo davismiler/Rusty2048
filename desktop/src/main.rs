@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use rusty2048_core::{Game, GameConfig, Direction};
+use rusty2048_shared::Theme;
 use serde::{Deserialize, Serialize};
 use tauri::State;
 
@@ -12,17 +13,23 @@ struct GameState {
     best_score: u32,
     moves: u32,
     game_state: String,
+    max_tile: u32,
+    can_undo: bool,
+    theme: Theme,
 }
 
+#[derive(Clone)]
 struct GameManager {
     game: Game,
+    theme: Theme,
 }
 
 impl GameManager {
     fn new() -> Result<Self, Box<dyn std::error::Error>> {
         let config = GameConfig::default();
         let game = Game::new(config)?;
-        Ok(GameManager { game })
+        let theme = Theme::default();
+        Ok(GameManager { game, theme })
     }
     
     fn get_state(&self) -> GameState {
@@ -50,12 +57,15 @@ impl GameManager {
             best_score: self.game.score().best(),
             moves: self.game.moves(),
             game_state: game_state.to_string(),
+            max_tile: self.game.board().max_tile(),
+            can_undo: true, // TODO: Add public method to check undo availability
+            theme: self.theme.clone(),
         }
     }
 }
 
 #[tauri::command]
-fn make_move(state: State<'_, GameManager>, direction: String) -> Result<GameState, String> {
+async fn make_move(state: State<'_, GameManager>, direction: String) -> Result<GameState, String> {
     let dir = match direction.as_str() {
         "up" => Direction::Up,
         "down" => Direction::Down,
@@ -70,15 +80,50 @@ fn make_move(state: State<'_, GameManager>, direction: String) -> Result<GameSta
 }
 
 #[tauri::command]
-fn get_state(state: State<'_, GameManager>) -> GameState {
-    state.inner().get_state()
+async fn get_state(state: State<'_, GameManager>) -> Result<GameState, String> {
+    Ok(state.inner().get_state())
 }
 
 #[tauri::command]
-fn new_game(state: State<'_, GameManager>) -> Result<GameState, String> {
+async fn new_game(state: State<'_, GameManager>) -> Result<GameState, String> {
     let mut game_manager = state.inner().clone();
     game_manager.game.new_game().map_err(|e| e.to_string())?;
     Ok(game_manager.get_state())
+}
+
+#[tauri::command]
+async fn undo(state: State<'_, GameManager>) -> Result<GameState, String> {
+    let mut game_manager = state.inner().clone();
+    game_manager.game.undo().map_err(|e| e.to_string())?;
+    Ok(game_manager.get_state())
+}
+
+#[tauri::command]
+async fn set_theme(state: State<'_, GameManager>, theme_name: String) -> Result<GameState, String> {
+    let mut game_manager = state.inner().clone();
+    if let Some(theme) = Theme::by_name(&theme_name) {
+        game_manager.theme = theme;
+        Ok(game_manager.get_state())
+    } else {
+        Err("Invalid theme name".to_string())
+    }
+}
+
+#[tauri::command]
+async fn get_available_themes() -> Vec<String> {
+    Theme::all_themes().iter().map(|t| t.name.clone()).collect()
+}
+
+#[tauri::command]
+async fn get_stats(state: State<'_, GameManager>) -> Result<serde_json::Value, String> {
+    let stats = state.inner().game.stats();
+    Ok(serde_json::json!({
+        "duration": stats.duration,
+        "max_tile": state.inner().game.board().max_tile(),
+        "moves": state.inner().game.moves(),
+        "score": state.inner().game.score().current(),
+        "best_score": state.inner().game.score().best()
+    }))
 }
 
 fn main() {
@@ -89,7 +134,11 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             make_move,
             get_state,
-            new_game
+            new_game,
+            undo,
+            set_theme,
+            get_available_themes,
+            get_stats
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

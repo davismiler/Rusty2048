@@ -32,6 +32,14 @@ rusty2048/
 cargo run -p rusty2048-cli
 ```
 
+### Desktop Version
+```bash
+# Build the desktop version
+cd desktop && ./build.sh
+# Run in development mode
+cd desktop && cargo tauri dev
+```
+
 ### Web Version
 
 ```bash
@@ -53,6 +61,11 @@ cd web/dist && python3 -m http.server 8000
 - **1-5**: Select theme directly (1=Classic, 2=Dark, 3=Neon, 4=Retro, 5=Pastel)
 - **H**: Toggle theme help
 - **Q** or **ESC**: Quit game
+
+#### Desktop Version
+- **Arrow Keys** or **WASD**: Move tiles
+- **Mouse**: Click buttons for New Game, Undo
+- **Theme Buttons**: Click to switch themes
 
 #### Web Version
 - **Arrow Keys** or **WASD**: Move tiles
@@ -109,9 +122,11 @@ cd web && ./build.sh
 # Files will be generated in web/dist/
 ```
 
-### Desktop Version (Planned)
+### Desktop Version
 ```bash
-cargo tauri build -p rusty2048-desktop
+cd desktop && cargo tauri build
+# Or run in development mode
+cd desktop && cargo tauri dev
 ```
 
 ## 🎯 Development Roadmap
@@ -122,7 +137,7 @@ cargo tauri build -p rusty2048-desktop
 - [x] CLI version score statistics and animations
 - [x] CLI version theme system
 - [x] Web version (WASM)
-- [ ] Desktop version (Tauri)
+- [x] Desktop version (Tauri)
 - [ ] Replay system
 - [ ] AI mode
 - [ ] Statistics charts

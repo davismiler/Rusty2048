@@ -1,46 +1,28 @@
 {
+  "$schema": "https://tauri.app/v2/schema.json",
+  "identifier": "com.rusty2048.desktop",
+  "productName": "Rusty2048 Desktop",
+  "version": "0.1.0",
   "build": {
-    "beforeDevCommand": "",
-    "beforeBuildCommand": "",
-    "devPath": "../web/dist",
-    "distDir": "../web/dist",
-    "withGlobalTauri": false
+    "frontendDist": "frontend"
   },
-  "package": {
-    "productName": "Rusty2048",
-    "version": "0.1.0"
-  },
-  "tauri": {
-    "allowlist": {
-      "all": false,
-      "shell": {
-        "all": false,
-        "open": true
-      }
-    },
-    "bundle": {
-      "active": true,
-      "targets": "all",
-      "identifier": "com.rusty2048.dev",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ]
-    },
-    "security": {
-      "csp": null
-    },
+  "app": {
     "windows": [
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "Rusty2048",
-        "width": 800,
-        "height": 600
+        "title": "Rusty2048 Desktop",
+        "width": 600,
+        "height": 700,
+        "minWidth": 500,
+        "minHeight": 600
       }
-    ]
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": false
   }
 }

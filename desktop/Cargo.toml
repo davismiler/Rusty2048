@@ -9,9 +9,10 @@ repository.workspace = true
 
 [dependencies]
 rusty2048-core = { path = "../core" }
-tauri.workspace = true
+rusty2048-shared = { path = "../shared" }
+tauri = { version = "2.0.0-alpha.12", features = [] }
 serde.workspace = true
 serde_json.workspace = true
 
 [build-dependencies]
-tauri-build = "1.5"
+tauri-build = { version = "2.0.0-alpha.12", features = [] }
