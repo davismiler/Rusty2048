@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -99,17 +100,58 @@
             transition: all 0.15s ease;
         }
 
-        .tile-2 { background: #eee4da; }
-        .tile-4 { background: #ede0c8; }
-        .tile-8 { background: #f2b179; color: #f9f6f2; }
-        .tile-16 { background: #f59563; color: #f9f6f2; }
-        .tile-32 { background: #f67c5f; color: #f9f6f2; }
-        .tile-64 { background: #f65e3b; color: #f9f6f2; }
-        .tile-128 { background: #edcf72; color: #f9f6f2; }
-        .tile-256 { background: #edcc61; color: #f9f6f2; }
-        .tile-512 { background: #edc850; color: #f9f6f2; }
-        .tile-1024 { background: #edc53f; color: #f9f6f2; }
-        .tile-2048 { background: #edc22e; color: #f9f6f2; }
+        .tile-2 {
+            background: #eee4da;
+        }
+
+        .tile-4 {
+            background: #ede0c8;
+        }
+
+        .tile-8 {
+            background: #f2b179;
+            color: #f9f6f2;
+        }
+
+        .tile-16 {
+            background: #f59563;
+            color: #f9f6f2;
+        }
+
+        .tile-32 {
+            background: #f67c5f;
+            color: #f9f6f2;
+        }
+
+        .tile-64 {
+            background: #f65e3b;
+            color: #f9f6f2;
+        }
+
+        .tile-128 {
+            background: #edcf72;
+            color: #f9f6f2;
+        }
+
+        .tile-256 {
+            background: #edcc61;
+            color: #f9f6f2;
+        }
+
+        .tile-512 {
+            background: #edc850;
+            color: #f9f6f2;
+        }
+
+        .tile-1024 {
+            background: #edc53f;
+            color: #f9f6f2;
+        }
+
+        .tile-2048 {
+            background: #edc22e;
+            color: #f9f6f2;
+        }
 
         .controls {
             margin-bottom: 20px;
@@ -187,6 +229,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="game-container">
         <div class="header">
@@ -234,32 +277,146 @@
     </div>
 
     <script>
-        // Import Tauri APIs for v2
-        const { invoke } = window.__TAURI__;
+        // -------- Tauri-safe bootstrap (v2/v1 compatible) --------
+        let invoke = null;
 
+        // 添加一个全局的调试函数
+        window.debugTauri = function () {
+            console.log('=== Tauri Debug Info ===');
+            console.log('window.__TAURI__:', window.__TAURI__);
+            console.log('window.invoke:', window.invoke);
+            console.log('window keys:', Object.keys(window));
+            console.log('document readyState:', document.readyState);
+            console.log('=======================');
+        };
+
+        function resolveInvoke() {
+            const t = window.__TAURI__;
+            console.log('🔍 Checking Tauri API...');
+            console.log('Tauri object exists:', !!t);
+            console.log('Tauri object keys:', t ? Object.keys(t) : 'undefined');
+
+            // v2 优先 core.invoke；某些桥接环境用 tauri.invoke；v1 是 invoke
+            const invoke = t?.core?.invoke || t?.tauri?.invoke || t?.invoke || null;
+            console.log('Found invoke function:', !!invoke, typeof invoke);
+            return invoke;
+        }
+
+        function tryAlternativeDetection() {
+            console.log('🔧 Trying alternative detection methods...');
+            console.log('Window object keys:', Object.keys(window));
+            console.log('Global invoke check:', typeof window.invoke);
+
+            // 检查全局的invoke函数
+            if (typeof window.invoke === 'function') {
+                console.log('✅ Found global invoke function');
+                return window.invoke;
+            }
+
+            // 检查其他可能的路径
+            const possiblePaths = [
+                'window.__TAURI__.invoke',
+                'window.__TAURI__.tauri.invoke',
+                'window.__TAURI__.core.invoke',
+                'window.__TAURI__.api.invoke',
+                'window.__TAURI__.commands.invoke'
+            ];
+
+            for (const path of possiblePaths) {
+                try {
+                    const func = eval(path);
+                    if (typeof func === 'function') {
+                        console.log(`✅ Found invoke at: ${path}`);
+                        return func;
+                    }
+                } catch (e) {
+                    console.log(`❌ Path ${path} not available:`, e.message);
+                }
+            }
+
+            console.error('❌ All alternative detection methods failed');
+            return null;
+        }
+
+        function onTauriReady() {
+            console.log('🎉 Tauri ready event fired');
+            invoke = resolveInvoke();
+            if (!invoke) {
+                console.error('❌ Tauri API not injected yet.');
+                return;
+            }
+            console.log('✅ Tauri API ready, starting game...');
+            initGame().catch(console.error);
+        }
+
+        console.log('🚀 Starting Tauri initialization...');
+
+        // 立即尝试检测
+        if (resolveInvoke()) {
+            console.log('✅ Tauri API found immediately');
+            onTauriReady();
+        } else {
+            console.log('⏳ Tauri API not found, setting up listeners...');
+
+            // 监听 tauri://ready 事件
+            window.addEventListener('tauri://ready', () => {
+                console.log('🎉 tauri://ready event received');
+                onTauriReady();
+            }, { once: true });
+
+            // 监听 window load 事件
+            window.addEventListener('load', () => {
+                console.log('📦 Window load event received');
+                setTimeout(() => {
+                    if (resolveInvoke()) {
+                        console.log('✅ Tauri API found after window load');
+                        onTauriReady();
+                    }
+                }, 100);
+            });
+
+            // 定期检查API可用性
+            let checkCount = 0;
+            const checkInterval = setInterval(() => {
+                checkCount++;
+                console.log(`🔍 Checking Tauri API (attempt ${checkCount})...`);
+
+                if (resolveInvoke()) {
+                    console.log('✅ Tauri API found during polling!');
+                    clearInterval(checkInterval);
+                    onTauriReady();
+                } else if (checkCount >= 30) { // 3秒后停止检查
+                    console.error('❌ Tauri API not available after 3s of checking');
+                    clearInterval(checkInterval);
+                    console.log('🔧 Trying alternative detection methods...');
+                    tryAlternativeDetection();
+                }
+            }, 100);
+        }
+
+        // ----------------- Game logic (Desktop) -------------------
         let gameState = null;
         let currentTheme = 'Classic';
 
         // Initialize the game
         async function initGame() {
             try {
-                console.log('Initializing game...');
-                console.log('Tauri API available:', !!window.__TAURI__);
-                console.log('Tauri API structure:', window.__TAURI__);
-                console.log('Invoke function available:', typeof invoke);
+                console.log('🎮 Initializing game...');
+                console.log('Calling get_state...');
                 gameState = await invoke('get_state');
                 console.log('Game state received:', gameState);
+                console.log('Board data:', gameState?.board);
                 updateDisplay();
                 setupEventListeners();
+                console.log('✅ Game initialized successfully');
             } catch (error) {
-                console.error('Failed to initialize game:', error);
+                console.error('❌ Failed to initialize game:', error);
             }
         }
 
         // Update the display
         function updateDisplay() {
             if (!gameState) return;
-            
             updateGrid();
             updateStats();
             updateMessage();
@@ -269,27 +426,35 @@
         // Update the game grid
         function updateGrid() {
             const grid = document.getElementById('grid');
+            if (!grid) {
+                console.error('❌ Grid element not found!');
+                return;
+            }
+
             const board = gameState.board;
-            
+            if (!board || !Array.isArray(board)) {
+                console.error('❌ Invalid board data:', board);
+                return;
+            }
+
             grid.innerHTML = '';
-            
+
             for (let row = 0; row < 4; row++) {
                 const rowDiv = document.createElement('div');
                 rowDiv.className = 'grid-row';
-                
+
                 for (let col = 0; col < 4; col++) {
                     const tileDiv = document.createElement('div');
                     const value = board[row][col];
-                    
+
                     tileDiv.className = 'tile';
                     if (value > 0) {
                         tileDiv.textContent = value;
                         tileDiv.classList.add(`tile-${value}`);
                     }
-                    
                     rowDiv.appendChild(tileDiv);
                 }
-                
+
                 grid.appendChild(rowDiv);
             }
         }
@@ -304,10 +469,9 @@
         // Update game message
         function updateMessage() {
             const messageEl = document.getElementById('message');
-            
             messageEl.style.display = 'none';
             messageEl.className = 'message';
-            
+
             if (gameState.game_state === 'won') {
                 messageEl.textContent = '🎉 Congratulations! You won!';
                 messageEl.classList.add('won');
@@ -328,33 +492,41 @@
         // Apply theme
         async function applyTheme(themeName) {
             try {
-                gameState = await invoke('set_theme', { themeName });
+                console.log('Applying theme:', themeName);
+                // 注意与 Rust 端参数名对齐：theme_name（蛇形）
+                gameState = await invoke('set_theme', { args: { themeName } });
                 currentTheme = themeName;
-                
+
                 // Update theme buttons
-                document.querySelectorAll('.theme-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                document.querySelector(`[data-theme="${themeName}"]`).classList.add('active');
-                
-                // Apply theme colors
+                document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
+                const activeBtn = document.querySelector(`[data-theme="${themeName}"]`);
+                if (activeBtn) activeBtn.classList.add('active');
+
+                // Apply theme colors (由后端返回)
                 const theme = gameState.theme;
-                document.body.style.backgroundColor = theme.background;
-                document.querySelector('.title').style.color = theme.title_color;
-                document.querySelector('.instructions').style.color = theme.text_color;
-                document.querySelector('.grid').style.backgroundColor = theme.grid_background;
-                
-                // Update stat boxes
-                document.querySelectorAll('.stat-box').forEach(box => {
-                    box.style.backgroundColor = theme.grid_background;
-                });
-                
-                // Update score colors
-                document.querySelector('#score').style.color = theme.score_color;
-                document.querySelector('#best').style.color = theme.best_score_color;
-                document.querySelector('#moves').style.color = theme.moves_color;
-                
+                if (theme) {
+                    document.body.style.backgroundColor = theme.background;
+                    const titleEl = document.querySelector('.title');
+                    const instrEl = document.querySelector('.instructions');
+                    const gridEl = document.querySelector('.grid');
+                    if (titleEl) titleEl.style.color = theme.title_color;
+                    if (instrEl) instrEl.style.color = theme.text_color;
+                    if (gridEl) gridEl.style.backgroundColor = theme.grid_background;
+
+                    document.querySelectorAll('.stat-box').forEach(box => {
+                        box.style.backgroundColor = theme.grid_background;
+                    });
+
+                    const scoreEl = document.querySelector('#score');
+                    const bestEl = document.querySelector('#best');
+                    const movesEl = document.querySelector('#moves');
+                    if (scoreEl) scoreEl.style.color = theme.score_color || '';
+                    if (bestEl) bestEl.style.color = theme.best_score_color || '';
+                    if (movesEl) movesEl.style.color = theme.moves_color || '';
+                }
+
                 updateDisplay();
+                console.log('Theme applied successfully');
             } catch (error) {
                 console.error('Failed to set theme:', error);
             }
@@ -364,8 +536,8 @@
         function setupEventListeners() {
             // Keyboard controls
             document.addEventListener('keydown', async (e) => {
-                if (gameState.game_state !== 'playing') return;
-                
+                if (!gameState || gameState.game_state !== 'playing') return;
+
                 let direction = null;
                 switch (e.key) {
                     case 'ArrowUp':
@@ -389,7 +561,7 @@
                         direction = 'right';
                         break;
                 }
-                
+
                 if (direction) {
                     e.preventDefault();
                     try {
@@ -402,7 +574,7 @@
             });
 
             // Button controls
-            document.getElementById('newGame').addEventListener('click', async () => {
+            document.getElementById('newGame')?.addEventListener('click', async () => {
                 try {
                     gameState = await invoke('new_game');
                     updateDisplay();
@@ -411,7 +583,7 @@
                 }
             });
 
-            document.getElementById('undo').addEventListener('click', async () => {
+            document.getElementById('undo')?.addEventListener('click', async () => {
                 try {
                     gameState = await invoke('undo');
                     updateDisplay();
@@ -424,13 +596,12 @@
             document.querySelectorAll('.theme-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const themeName = btn.getAttribute('data-theme');
-                    applyTheme(themeName);
+                    if (themeName) applyTheme(themeName);
                 });
             });
         }
-
-        // Initialize the game when the page loads
-        initGame().catch(console.error);
     </script>
+
 </body>
+
 </html>
