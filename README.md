@@ -68,6 +68,8 @@ cd web/dist && python3 -m http.server 8000
 # Then open http://localhost:8000 in your browser
 ```
 
+**🌐 Live Demo**: [Play on Vercel](https://rusty2048.vercel.app) *(Coming Soon)*
+
 ### Controls
 
 #### CLI Version
@@ -224,6 +226,22 @@ cargo bench
 # Run property tests
 cargo test --features proptest
 ```
+
+## 🚀 Deployment
+
+### Vercel Deployment
+
+This project is configured for easy deployment on Vercel:
+
+1. **Fork this repository**
+2. **Connect to Vercel**: Go to [vercel.com](https://vercel.com) and import your fork
+3. **Automatic deployment**: Vercel will automatically build and deploy the web version
+
+For detailed deployment instructions, see [VERCEL_DEPLOY.md](VERCEL_DEPLOY.md).
+
+### Manual Deployment
+
+You can also deploy manually by building the web version and uploading the `web/dist` folder to any static hosting service.
 
 ## 📦 Build Targets
 

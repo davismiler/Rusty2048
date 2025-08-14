@@ -25,6 +25,13 @@ cp index.html dist/
 cp test-panic.html dist/
 cp -r pkg dist/
 
+# Create _headers file for Vercel
+echo "📝 Creating _headers file..."
+cat > dist/_headers << EOF
+/*.wasm
+  Content-Type: application/wasm
+EOF
+
 echo "✅ Build complete! Files are in the 'dist' directory."
 echo "🌐 To serve the web version, run:"
 echo "   cd dist && python3 -m http.server 8000"

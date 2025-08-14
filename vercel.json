@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "web/dist/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/pkg/(.*)",
+      "dest": "/web/dist/pkg/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/web/dist/$1"
+    }
+  ],
+  "buildCommand": "cd web && ./build.sh",
+  "outputDirectory": "web/dist"
+}

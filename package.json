@@ -1,0 +1,30 @@
+{
+  "name": "rusty2048",
+  "version": "0.1.0",
+  "description": "A modern implementation of the 2048 game written in Rust, supporting multi-platform deployment",
+  "main": "web/dist/index.html",
+  "scripts": {
+    "build": "cd web && ./build.sh",
+    "dev": "cd web && npm run dev",
+    "vercel-build": "cd web && ./build.sh"
+  },
+  "keywords": [
+    "2048",
+    "game",
+    "rust",
+    "wasm",
+    "web",
+    "cli",
+    "desktop",
+    "tauri"
+  ],
+  "author": "honkinglin",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/honkinglin/rusty2048.git"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
