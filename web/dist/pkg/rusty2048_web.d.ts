@@ -28,6 +28,10 @@ export class Rusty2048Web {
   get_moves(): number;
   undo(): void;
   set_theme(theme_name: string): void;
+  /**
+   * Get current theme information
+   */
+  get_theme(): any;
 }
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
@@ -48,6 +52,7 @@ export interface InitOutput {
   readonly rusty2048web_get_moves: (a: number) => number;
   readonly rusty2048web_undo: (a: number) => [number, number];
   readonly rusty2048web_set_theme: (a: number, b: number, c: number) => [number, number];
+  readonly rusty2048web_get_theme: (a: number) => any;
   readonly init_panic_hook: () => void;
   readonly __wbindgen_exn_store: (a: number) => void;
   readonly __externref_table_alloc: () => number;
