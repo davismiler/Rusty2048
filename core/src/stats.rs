@@ -1,8 +1,8 @@
+use crate::error::{GameError, GameResult};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
-use crate::error::{GameError, GameResult};
 
 /// Single game session statistics
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -74,7 +74,7 @@ pub struct StatisticsSummary {
 }
 
 /// Score distribution by ranges
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ScoreDistribution {
     /// Games with score 0-1000
     pub low_score: u32,
@@ -84,17 +84,6 @@ pub struct ScoreDistribution {
     pub high_score: u32,
     /// Games with score 10001+
     pub very_high_score: u32,
-}
-
-impl Default for ScoreDistribution {
-    fn default() -> Self {
-        Self {
-            low_score: 0,
-            medium_score: 0,
-            high_score: 0,
-            very_high_score: 0,
-        }
-    }
 }
 
 /// Statistics manager for tracking and analyzing game data
@@ -112,20 +101,20 @@ impl StatisticsManager {
             stats_file: stats_file.to_string(),
             sessions: Vec::new(),
         };
-        
+
         // Load existing statistics
         manager.load_statistics()?;
-        
+
         Ok(manager)
     }
-    
+
     /// Record a new game session
     pub fn record_session(&mut self, session: GameSessionStats) -> GameResult<()> {
         self.sessions.push(session);
         self.save_statistics()?;
         Ok(())
     }
-    
+
     /// Get statistics summary
     pub fn get_summary(&self) -> StatisticsSummary {
         if self.sessions.is_empty() {
@@ -145,28 +134,38 @@ impl StatisticsManager {
                 recent_games: Vec::new(),
             };
         }
-        
+
         let total_games = self.sessions.len() as u32;
         let games_won = self.sessions.iter().filter(|s| s.won).count() as u32;
         let win_rate = (games_won as f64 / total_games as f64) * 100.0;
-        
-        let highest_score = self.sessions.iter().map(|s| s.final_score).max().unwrap_or(0);
-        let average_score = self.sessions.iter().map(|s| s.final_score as f64).sum::<f64>() / total_games as f64;
-        
+
+        let highest_score = self
+            .sessions
+            .iter()
+            .map(|s| s.final_score)
+            .max()
+            .unwrap_or(0);
+        let average_score = self
+            .sessions
+            .iter()
+            .map(|s| s.final_score as f64)
+            .sum::<f64>()
+            / total_games as f64;
+
         let total_moves = self.sessions.iter().map(|s| s.moves).sum::<u32>();
         let average_moves = total_moves as f64 / total_games as f64;
-        
+
         let total_play_time = self.sessions.iter().map(|s| s.duration).sum::<u64>();
         let average_duration = total_play_time as f64 / total_games as f64;
-        
+
         let highest_tile = self.sessions.iter().map(|s| s.max_tile).max().unwrap_or(0);
-        
+
         // Calculate tile distribution
         let mut tile_distribution = HashMap::new();
         for session in &self.sessions {
             *tile_distribution.entry(session.max_tile).or_insert(0) += 1;
         }
-        
+
         // Calculate score distribution
         let mut score_distribution = ScoreDistribution::default();
         for session in &self.sessions {
@@ -177,12 +176,12 @@ impl StatisticsManager {
                 _ => score_distribution.very_high_score += 1,
             }
         }
-        
+
         // Get recent games (last 10)
         let mut recent_games = self.sessions.clone();
         recent_games.sort_by(|a, b| b.end_time.cmp(&a.end_time));
         recent_games.truncate(10);
-        
+
         StatisticsSummary {
             total_games,
             games_won,
@@ -199,38 +198,39 @@ impl StatisticsManager {
             recent_games,
         }
     }
-    
+
     /// Get score trend data (last N games)
     pub fn get_score_trend(&self, count: usize) -> Vec<(u32, u32)> {
         let mut recent_sessions = self.sessions.clone();
         recent_sessions.sort_by(|a, b| b.end_time.cmp(&a.end_time));
         recent_sessions.truncate(count);
         recent_sessions.reverse();
-        
+
         recent_sessions
             .iter()
             .enumerate()
             .map(|(i, session)| (i as u32, session.final_score))
             .collect()
     }
-    
+
     /// Get efficiency trend data (last N games)
     pub fn get_efficiency_trend(&self, count: usize) -> Vec<(u32, f64)> {
         let mut recent_sessions = self.sessions.clone();
         recent_sessions.sort_by(|a, b| b.end_time.cmp(&a.end_time));
         recent_sessions.truncate(count);
         recent_sessions.reverse();
-        
+
         recent_sessions
             .iter()
             .enumerate()
             .map(|(i, session)| (i as u32, session.efficiency))
             .collect()
     }
-    
+
     /// Get tile achievement data
     pub fn get_tile_achievements(&self) -> Vec<(u32, u32)> {
-        let mut tile_counts: Vec<(u32, u32)> = self.sessions
+        let mut tile_counts: Vec<(u32, u32)> = self
+            .sessions
             .iter()
             .fold(HashMap::new(), |mut acc, session| {
                 *acc.entry(session.max_tile).or_insert(0) += 1;
@@ -238,44 +238,48 @@ impl StatisticsManager {
             })
             .into_iter()
             .collect();
-        
+
         tile_counts.sort_by(|a, b| a.0.cmp(&b.0));
         tile_counts
     }
-    
+
     /// Load statistics from file
     fn load_statistics(&mut self) -> GameResult<()> {
         if !Path::new(&self.stats_file).exists() {
             return Ok(());
         }
-        
-        let content = fs::read_to_string(&self.stats_file)
-            .map_err(|e| GameError::InvalidOperation(format!("Failed to read stats file: {}", e)))?;
-        
-        self.sessions = serde_json::from_str(&content)
-            .map_err(|e| GameError::InvalidOperation(format!("Failed to parse stats file: {}", e)))?;
-        
+
+        let content = fs::read_to_string(&self.stats_file).map_err(|e| {
+            GameError::InvalidOperation(format!("Failed to read stats file: {}", e))
+        })?;
+
+        self.sessions = serde_json::from_str(&content).map_err(|e| {
+            GameError::InvalidOperation(format!("Failed to parse stats file: {}", e))
+        })?;
+
         Ok(())
     }
-    
+
     /// Save statistics to file
     fn save_statistics(&self) -> GameResult<()> {
-        let content = serde_json::to_string_pretty(&self.sessions)
-            .map_err(|e| GameError::InvalidOperation(format!("Failed to serialize stats: {}", e)))?;
-        
-        fs::write(&self.stats_file, content)
-            .map_err(|e| GameError::InvalidOperation(format!("Failed to write stats file: {}", e)))?;
-        
+        let content = serde_json::to_string_pretty(&self.sessions).map_err(|e| {
+            GameError::InvalidOperation(format!("Failed to serialize stats: {}", e))
+        })?;
+
+        fs::write(&self.stats_file, content).map_err(|e| {
+            GameError::InvalidOperation(format!("Failed to write stats file: {}", e))
+        })?;
+
         Ok(())
     }
-    
+
     /// Clear all statistics
     pub fn clear_statistics(&mut self) -> GameResult<()> {
         self.sessions.clear();
         self.save_statistics()?;
         Ok(())
     }
-    
+
     /// Export statistics to JSON
     pub fn export_statistics(&self) -> GameResult<String> {
         serde_json::to_string_pretty(&self.sessions)
@@ -298,19 +302,19 @@ pub fn create_session_stats(
     } else {
         GameEndReason::GameOver
     };
-    
+
     let avg_score_per_move = if moves > 0 {
         final_score as f64 / moves as f64
     } else {
         0.0
     };
-    
+
     let efficiency = if moves > 0 {
         final_score as f64 / moves as f64
     } else {
         0.0
     };
-    
+
     GameSessionStats {
         session_id: start_time,
         final_score,

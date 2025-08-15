@@ -1,6 +1,9 @@
-# Rusty2048 🎮
+# 🎮 Rusty2048
 
 A modern implementation of the 2048 game written in Rust, supporting multi-platform deployment.
+
+[![Quick Check](https://github.com/kyrieleis/rusty2048/workflows/Quick%20Check/badge.svg)](https://github.com/kyrieleis/rusty2048/actions?query=workflow%3A%22Quick+Check%22)
+[![CI](https://github.com/kyrieleis/rusty2048/workflows/CI/badge.svg)](https://github.com/kyrieleis/rusty2048/actions?query=workflow%3ACI)
 
 ## 🖼️ Screenshots
 

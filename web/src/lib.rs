@@ -1,7 +1,7 @@
-use wasm_bindgen::prelude::*;
-use rusty2048_core::{Game, GameConfig, Direction, GameState};
+use rusty2048_core::{Direction, Game, GameConfig, GameState};
 use rusty2048_shared::{I18n, Language, TranslationKey};
 use serde::Serialize;
+use wasm_bindgen::prelude::*;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -16,16 +16,22 @@ pub struct Rusty2048Web {
     current_theme: String,
 }
 
+impl Default for Rusty2048Web {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[wasm_bindgen]
 impl Rusty2048Web {
     #[wasm_bindgen(constructor)]
     pub fn new() -> Self {
         console_error_panic_hook::set_once();
-        
+
         let config = GameConfig::default();
         let game = Game::new(config).expect("Failed to create game");
         let mut i18n = I18n::new();
-        
+
         // Try to detect browser language
         if let Some(window) = web_sys::window() {
             let navigator = window.navigator();
@@ -35,19 +41,19 @@ impl Rusty2048Web {
                 }
             }
         }
-        
-        Self { 
-            game, 
+
+        Self {
+            game,
             i18n,
             current_theme: "Classic".to_string(),
         }
     }
-    
+
     /// Get current language
     pub fn get_language(&self) -> String {
         self.i18n.current_language().code().to_string()
     }
-    
+
     /// Set language
     pub fn set_language(&mut self, language_code: &str) -> Result<(), JsValue> {
         if let Some(language) = Language::from_code(language_code) {
@@ -57,16 +63,18 @@ impl Rusty2048Web {
             Err(JsValue::from_str("Invalid language code"))
         }
     }
-    
+
     /// Get supported languages
     pub fn get_supported_languages(&self) -> JsValue {
-        let languages: Vec<String> = self.i18n.supported_languages()
+        let languages: Vec<String> = self
+            .i18n
+            .supported_languages()
             .iter()
             .map(|lang| lang.code().to_string())
             .collect();
         serde_wasm_bindgen::to_value(&languages).unwrap()
     }
-    
+
     /// Get translation for a key
     pub fn get_translation(&self, key: &str) -> String {
         // Convert string key to TranslationKey enum
@@ -95,14 +103,16 @@ impl Rusty2048Web {
             "help" => TranslationKey::Help,
             "quit" => TranslationKey::Quit,
             "language" => TranslationKey::Help, // Use Help as placeholder for "Language"
-            _ => TranslationKey::Help, // Default fallback
+            _ => TranslationKey::Help,          // Default fallback
         };
-        
+
         self.i18n.t(&translation_key)
     }
 
     pub fn new_game(&mut self) -> Result<(), JsValue> {
-        self.game.new_game().map_err(|e| JsValue::from_str(&e.to_string()))
+        self.game
+            .new_game()
+            .map_err(|e| JsValue::from_str(&e.to_string()))
     }
 
     pub fn make_move(&mut self, direction: &str) -> Result<bool, JsValue> {
@@ -113,8 +123,10 @@ impl Rusty2048Web {
             "right" => Direction::Right,
             _ => return Err(JsValue::from_str("Invalid direction")),
         };
-        
-        self.game.make_move(dir).map_err(|e| JsValue::from_str(&e.to_string()))
+
+        self.game
+            .make_move(dir)
+            .map_err(|e| JsValue::from_str(&e.to_string()))
     }
 
     pub fn get_board(&self) -> Vec<u32> {
@@ -148,7 +160,9 @@ impl Rusty2048Web {
     }
 
     pub fn undo(&mut self) -> Result<(), JsValue> {
-        self.game.undo().map_err(|e| JsValue::from_str(&e.to_string()))
+        self.game
+            .undo()
+            .map_err(|e| JsValue::from_str(&e.to_string()))
     }
 
     pub fn set_theme(&mut self, theme_name: &str) -> Result<(), JsValue> {
@@ -167,7 +181,7 @@ impl Rusty2048Web {
             grid_background: String,
             tile_colors: Vec<String>,
         }
-        
+
         // Get theme based on current theme name
         let theme = match self.current_theme.as_str() {
             "Dark" => Theme {
@@ -250,7 +264,8 @@ impl Rusty2048Web {
                     "#f0e68c".to_string(), // 2048
                 ],
             },
-            _ => Theme { // Classic theme
+            _ => Theme {
+                // Classic theme
                 background: "#faf8ef".to_string(),
                 title_color: "#776e65".to_string(),
                 text_color: "#776e65".to_string(),
@@ -271,7 +286,7 @@ impl Rusty2048Web {
                 ],
             },
         };
-        
+
         serde_wasm_bindgen::to_value(&theme).unwrap()
     }
 }

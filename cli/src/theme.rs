@@ -20,7 +20,7 @@ pub fn get_tile_color(value: u32, theme: &Theme) -> Color {
     if value == 0 {
         return hex_to_color(&theme.tile_colors[0]);
     }
-    
+
     let color_index = value.trailing_zeros() as usize;
     if color_index < theme.tile_colors.len() {
         hex_to_color(&theme.tile_colors[color_index])
@@ -36,7 +36,7 @@ pub fn get_tile_text_color(value: u32, theme: &Theme) -> Color {
     if value == 0 {
         return hex_to_color(&theme.text_color);
     }
-    
+
     // For dark tiles, use light text; for light tiles, use dark text
     let tile_color = get_tile_color(value, theme);
     match tile_color {
@@ -69,13 +69,13 @@ impl ThemeManager {
             current_index: 0,
         }
     }
-    
+
     /// Switch to next theme
     pub fn next_theme(&mut self) {
         self.current_index = (self.current_index + 1) % self.themes.len();
         self.current_theme = self.themes[self.current_index].clone();
     }
-    
+
     /// Switch to previous theme
     #[allow(dead_code)]
     pub fn prev_theme(&mut self) {
@@ -86,7 +86,7 @@ impl ThemeManager {
         };
         self.current_theme = self.themes[self.current_index].clone();
     }
-    
+
     /// Switch to specific theme by name
     pub fn set_theme(&mut self, name: &str) -> bool {
         if let Some(theme) = Theme::by_name(name) {
@@ -97,12 +97,12 @@ impl ThemeManager {
             false
         }
     }
-    
+
     /// Get current theme name
     pub fn current_theme_name(&self) -> &str {
         &self.current_theme.name
     }
-    
+
     /// Get all theme names
     #[allow(dead_code)]
     pub fn theme_names(&self) -> Vec<&str> {

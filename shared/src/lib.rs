@@ -1,5 +1,5 @@
 //! Shared components for Rusty2048
-//! 
+//!
 //! This module contains shared utilities, themes, and components
 //! that can be used across different platforms.
 
