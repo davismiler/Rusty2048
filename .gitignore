@@ -27,3 +27,4 @@ cli/replays/replay*
 .vercel
 
 node_modules
+web/dist
