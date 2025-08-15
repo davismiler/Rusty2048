@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rusty2048</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -13,72 +14,173 @@
 
         body {
             font-family: 'Arial', sans-serif;
-            background: #faf8ef;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             transition: background-color 0.3s ease;
+            position: relative;
+            overflow-x: hidden;
         }
 
-        .game-container {
-            text-align: center;
-            max-width: 500px;
-            width: 100%;
+        /* 手机壳样式 */
+        .phone-container {
+            position: relative;
+            width: 375px;
+            height: 812px;
+            background: #1a1a1a;
+            border-radius: 40px;
             padding: 20px;
+            box-shadow: 
+                0 0 0 8px #2a2a2a,
+                0 0 0 12px #3a3a3a,
+                0 20px 40px rgba(0,0,0,0.4),
+                inset 0 0 0 2px #4a4a4a;
+            position: relative;
+        }
+
+        /* 手机屏幕 */
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #faf8ef;
+            border-radius: 30px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s ease;
+        }
+
+        /* 状态栏 */
+        .status-bar {
+            height: 44px;
+            background: rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #776e65;
+        }
+
+        .status-left {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-right {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* 主内容区域 */
+        .game-container {
+            flex: 1;
+            text-align: center;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .header {
             margin-bottom: 20px;
+            position: relative;
         }
 
         .title {
-            font-size: 48px;
+            font-size: 36px;
             font-weight: bold;
             color: #776e65;
             margin-bottom: 10px;
             transition: color 0.3s ease;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* GitHub图标 */
+        .github-link {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #333 0%, #666 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .github-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, #24292e 0%, #586069 100%);
+        }
+
+        .github-link i {
+            font-size: 18px;
         }
 
         .stats {
             display: flex;
             justify-content: space-between;
             margin-bottom: 20px;
+            gap: 10px;
         }
 
         .stat-box {
-            background: #bbada0;
-            padding: 10px 20px;
-            border-radius: 6px;
+            background: linear-gradient(135deg, #bbada0 0%, #a89a8c 100%);
+            padding: 12px 16px;
+            border-radius: 12px;
             color: white;
-            min-width: 100px;
-            transition: background-color 0.3s ease;
+            flex: 1;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .stat-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
         }
 
         .stat-label {
-            font-size: 12px;
+            font-size: 11px;
             text-transform: uppercase;
             margin-bottom: 5px;
+            opacity: 0.9;
+            font-weight: 600;
         }
 
         .stat-value {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
         }
 
         .grid {
-            background: #bbada0;
-            border-radius: 6px;
-            padding: 10px;
+            background: linear-gradient(135deg, #bbada0 0%, #a89a8c 100%);
+            border-radius: 12px;
+            padding: 12px;
             display: inline-block;
             margin-bottom: 20px;
-            transition: background-color 0.3s ease;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            border: 2px solid rgba(255,255,255,0.1);
         }
 
         .grid-row {
             display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
+            gap: 8px;
+            margin-bottom: 8px;
         }
 
         .grid-row:last-child {
@@ -86,168 +188,283 @@
         }
 
         .tile {
-            width: 80px;
-            height: 80px;
-            border-radius: 6px;
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 18px;
             font-weight: bold;
             color: #776e65;
             background: #cdc1b4;
             transition: all 0.15s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
-        .tile-2 { background: #eee4da; }
-        .tile-4 { background: #ede0c8; }
-        .tile-8 { background: #f2b179; color: #f9f6f2; }
-        .tile-16 { background: #f59563; color: #f9f6f2; }
-        .tile-32 { background: #f67c5f; color: #f9f6f2; }
-        .tile-64 { background: #f65e3b; color: #f9f6f2; }
-        .tile-128 { background: #edcf72; color: #f9f6f2; }
-        .tile-256 { background: #edcc61; color: #f9f6f2; }
-        .tile-512 { background: #edc850; color: #f9f6f2; }
-        .tile-1024 { background: #edc53f; color: #f9f6f2; }
-        .tile-2048 { background: #edc22e; color: #f9f6f2; }
+        .tile-2 { background: linear-gradient(135deg, #eee4da 0%, #ede0c8 100%); }
+        .tile-4 { background: linear-gradient(135deg, #ede0c8 0%, #f2b179 100%); }
+        .tile-8 { background: linear-gradient(135deg, #f2b179 0%, #f59563 100%); color: #f9f6f2; }
+        .tile-16 { background: linear-gradient(135deg, #f59563 0%, #f67c5f 100%); color: #f9f6f2; }
+        .tile-32 { background: linear-gradient(135deg, #f67c5f 0%, #f65e3b 100%); color: #f9f6f2; }
+        .tile-64 { background: linear-gradient(135deg, #f65e3b 0%, #edcf72 100%); color: #f9f6f2; }
+        .tile-128 { background: linear-gradient(135deg, #edcf72 0%, #edcc61 100%); color: #f9f6f2; }
+        .tile-256 { background: linear-gradient(135deg, #edcc61 0%, #edc850 100%); color: #f9f6f2; }
+        .tile-512 { background: linear-gradient(135deg, #edc850 0%, #edc53f 100%); color: #f9f6f2; }
+        .tile-1024 { background: linear-gradient(135deg, #edc53f 0%, #edc22e 100%); color: #f9f6f2; }
+        .tile-2048 { background: linear-gradient(135deg, #edc22e 0%, #3c3a32 100%); color: #f9f6f2; }
 
         .controls {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            gap: 8px;
+            justify-content: center;
         }
 
         .btn {
-            background: #8f7a66;
+            background: linear-gradient(135deg, #8f7a66 0%, #7f6a56 100%);
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
+            padding: 10px 16px;
+            border-radius: 8px;
             cursor: pointer;
-            margin: 0 5px;
-            font-size: 14px;
-            transition: background-color 0.3s ease;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
         .btn:hover {
-            background: #7f6a56;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, #7f6a56 0%, #6f5a46 100%);
         }
 
         .btn:disabled {
-            background: #ccc;
+            background: linear-gradient(135deg, #ccc 0%, #bbb 100%);
             cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .theme-selector {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+        }
+
+        .theme-label {
+            font-size: 12px;
+            color: #776e65;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .theme-buttons {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
         .theme-btn {
-            background: #8f7a66;
+            background: linear-gradient(135deg, #8f7a66 0%, #7f6a56 100%);
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
+            padding: 6px 12px;
+            border-radius: 6px;
             cursor: pointer;
-            margin: 0 3px;
-            font-size: 12px;
-            transition: background-color 0.3s ease;
+            font-size: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
         .theme-btn:hover {
-            background: #7f6a56;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
 
         .theme-btn.active {
-            background: #edc22e;
+            background: linear-gradient(135deg, #edc22e 0%, #f59563 100%);
+            box-shadow: 0 4px 8px rgba(237, 194, 46, 0.3);
         }
 
         .message {
-            font-size: 18px;
+            font-size: 14px;
             font-weight: bold;
             margin: 10px 0;
             padding: 10px;
-            border-radius: 6px;
+            border-radius: 8px;
             display: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
         .message.won {
-            background: #edc22e;
+            background: linear-gradient(135deg, #edc22e 0%, #f59563 100%);
             color: #f9f6f2;
         }
 
         .message.game-over {
-            background: #f65e3b;
+            background: linear-gradient(135deg, #f65e3b 0%, #edcf72 100%);
             color: #f9f6f2;
         }
 
         .instructions {
-            font-size: 14px;
+            font-size: 11px;
             color: #776e65;
-            margin-top: 20px;
+            margin-top: 10px;
             transition: color 0.3s ease;
+            line-height: 1.4;
+            opacity: 0.8;
         }
 
+        /* 响应式设计 */
         @media (max-width: 480px) {
+            .phone-container {
+                width: 100%;
+                height: 100vh;
+                border-radius: 0;
+                padding: 10px;
+            }
+            
+            .phone-screen {
+                border-radius: 20px;
+            }
+            
             .tile {
-                width: 60px;
-                height: 60px;
-                font-size: 18px;
+                width: 50px;
+                height: 50px;
+                font-size: 16px;
             }
             
             .title {
-                font-size: 36px;
+                font-size: 28px;
             }
             
             .stats {
                 flex-direction: column;
-                gap: 10px;
+                gap: 8px;
             }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 200px;
+            }
+        }
+
+        /* 动画效果 */
+        @keyframes slideIn {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .game-container {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        /* 手机壳装饰 */
+        .phone-container::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -2px;
+            width: 4px;
+            height: 60px;
+            background: #2a2a2a;
+            border-radius: 2px;
+            transform: translateY(-50%);
+        }
+
+        .phone-container::after {
+            content: '';
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            width: 60px;
+            height: 4px;
+            background: #2a2a2a;
+            border-radius: 2px;
+            transform: translateX(-50%);
         }
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <div class="header">
-            <div class="title">Rusty2048</div>
-        </div>
-
-        <div class="stats">
-            <div class="stat-box">
-                <div class="stat-label">Score</div>
-                <div class="stat-value" id="score">0</div>
+    <div class="phone-container">
+        <div class="phone-screen">
+            <div class="status-bar">
+                <div class="status-left">
+                    <span>9:41</span>
+                </div>
+                <div class="status-right">
+                    <i class="fas fa-signal"></i>
+                    <i class="fas fa-wifi"></i>
+                    <i class="fas fa-battery-three-quarters"></i>
+                </div>
             </div>
-            <div class="stat-box">
-                <div class="stat-label">Best</div>
-                <div class="stat-value" id="best">0</div>
+            
+            <div class="game-container">
+                <div class="header">
+                    <div class="title">Rusty2048</div>
+                    <a href="https://github.com/honkinglin/rusty2048" target="_blank" class="github-link" title="View on GitHub">
+                        <i class="fab fa-github"></i>
+                    </a>
+                </div>
+
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="stat-label">Score</div>
+                        <div class="stat-value" id="score">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Best</div>
+                        <div class="stat-value" id="best">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Moves</div>
+                        <div class="stat-value" id="moves">0</div>
+                    </div>
+                </div>
+
+                <div class="grid" id="grid">
+                    <!-- Grid will be generated by JavaScript -->
+                </div>
+
+                <div class="message" id="message"></div>
+
+                <div class="controls">
+                    <button class="btn" id="newGame">New Game</button>
+                    <button class="btn" id="undo" disabled>Undo</button>
+                    <button class="btn" id="languageToggle">Language</button>
+                </div>
+
+                <div class="theme-selector">
+                    <div class="theme-label">Themes:</div>
+                    <div class="theme-buttons">
+                        <button class="theme-btn active" data-theme="Classic">Classic</button>
+                        <button class="theme-btn" data-theme="Dark">Dark</button>
+                        <button class="theme-btn" data-theme="Neon">Neon</button>
+                        <button class="theme-btn" data-theme="Retro">Retro</button>
+                        <button class="theme-btn" data-theme="Pastel">Pastel</button>
+                    </div>
+                </div>
+
+                <div class="instructions">
+                    Use arrow keys or swipe to move tiles. Combine tiles to reach 2048!
+                </div>
             </div>
-            <div class="stat-box">
-                <div class="stat-label">Moves</div>
-                <div class="stat-value" id="moves">0</div>
-            </div>
-        </div>
-
-        <div class="grid" id="grid">
-            <!-- Grid will be generated by JavaScript -->
-        </div>
-
-        <div class="message" id="message"></div>
-
-        <div class="controls">
-            <button class="btn" id="newGame">New Game</button>
-            <button class="btn" id="undo" disabled>Undo</button>
-            <button class="btn" id="languageToggle">Language</button>
-        </div>
-
-        <div class="theme-selector">
-            <div style="margin-bottom: 10px; font-size: 14px; color: #776e65;">Themes:</div>
-            <button class="theme-btn active" data-theme="Classic">Classic</button>
-            <button class="theme-btn" data-theme="Dark">Dark</button>
-            <button class="theme-btn" data-theme="Neon">Neon</button>
-            <button class="theme-btn" data-theme="Retro">Retro</button>
-            <button class="theme-btn" data-theme="Pastel">Pastel</button>
-        </div>
-
-        <div class="instructions">
-            Use arrow keys or swipe to move tiles. Combine tiles to reach 2048!
         </div>
     </div>
 
