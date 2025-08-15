@@ -1,5 +1,5 @@
+use crate::{Direction, Game, GameConfig, GameError, GameResult};
 use serde::{Deserialize, Serialize};
-use crate::{Direction, Game, GameConfig, GameResult, GameError};
 
 /// A single move in the replay
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -79,13 +79,13 @@ impl ReplayMetadata {
             notes: None,
         }
     }
-    
+
     /// Set player name
     pub fn with_player_name(mut self, player_name: String) -> Self {
         self.player_name = Some(player_name);
         self
     }
-    
+
     /// Set notes
     pub fn with_notes(mut self, notes: String) -> Self {
         self.notes = Some(notes);
@@ -108,7 +108,7 @@ impl ReplayRecorder {
     pub fn new(config: GameConfig) -> GameResult<Self> {
         let game = Game::new(config.clone())?;
         let initial_board = game.board().to_vec();
-        
+
         let replay_data = ReplayData {
             config,
             initial_board,
@@ -119,29 +119,29 @@ impl ReplayRecorder {
             duration: 0,
             metadata: ReplayMetadata::default(),
         };
-        
+
         Ok(Self {
             game,
             replay_data,
             recording: true,
         })
     }
-    
+
     /// Make a move and record it
     pub fn make_move(&mut self, direction: Direction) -> GameResult<bool> {
         if !self.recording {
             return Err(GameError::InvalidOperation("Recording stopped".to_string()));
         }
-        
+
         // Save state before move
         let board_before = self.game.board().to_vec();
         let score_before = self.game.score().current();
         let move_number = self.game.moves();
         let timestamp = crate::game::Game::get_current_time();
-        
+
         // Make the move
         let moved = self.game.make_move(direction)?;
-        
+
         if moved {
             // Record the move
             let move_record = ReplayMove {
@@ -153,33 +153,34 @@ impl ReplayRecorder {
                 move_number,
                 timestamp,
             };
-            
+
             self.replay_data.moves.push(move_record);
             self.replay_data.total_moves = self.game.moves();
             self.replay_data.final_state = self.game.state();
             self.replay_data.final_score = self.game.score().current();
         }
-        
+
         Ok(moved)
     }
-    
+
     /// Stop recording and finalize replay
     pub fn stop_recording(&mut self) -> ReplayData {
         self.recording = false;
-        self.replay_data.duration = crate::game::Game::get_current_time() - self.replay_data.metadata.created_at;
+        self.replay_data.duration =
+            crate::game::Game::get_current_time() - self.replay_data.metadata.created_at;
         self.replay_data.clone()
     }
-    
+
     /// Get current game state
     pub fn game(&self) -> &Game {
         &self.game
     }
-    
+
     /// Get current replay data
     pub fn replay_data(&self) -> &ReplayData {
         &self.replay_data
     }
-    
+
     /// Set replay metadata
     pub fn set_metadata(&mut self, metadata: ReplayMetadata) {
         self.replay_data.metadata = metadata;
@@ -204,7 +205,7 @@ impl ReplayPlayer {
     /// Create a new replay player
     pub fn new(replay_data: ReplayData) -> GameResult<Self> {
         let current_game = Game::new(replay_data.config.clone())?;
-        
+
         Ok(Self {
             replay_data,
             current_move: 0,
@@ -213,120 +214,122 @@ impl ReplayPlayer {
             speed: 1.0,
         })
     }
-    
+
     /// Start playing the replay
     pub fn play(&mut self) {
         self.playing = true;
     }
-    
+
     /// Pause the replay
     pub fn pause(&mut self) {
         self.playing = false;
     }
-    
+
     /// Stop the replay and reset to beginning
     pub fn stop(&mut self) {
         self.playing = false;
         self.current_move = 0;
         self.reset_game();
     }
-    
+
     /// Go to next move
     pub fn next_move(&mut self) -> GameResult<bool> {
         if self.current_move >= self.replay_data.moves.len() {
             return Ok(false);
         }
-        
+
         let replay_move = &self.replay_data.moves[self.current_move];
-        
+
         // Apply the move to current game
         self.current_game.make_move(replay_move.direction)?;
         self.current_move += 1;
-        
+
         Ok(true)
     }
-    
+
     /// Go to previous move
     pub fn previous_move(&mut self) -> GameResult<bool> {
         if self.current_move == 0 {
             return Ok(false);
         }
-        
+
         self.current_move -= 1;
         self.reset_to_move(self.current_move)?;
-        
+
         Ok(true)
     }
-    
+
     /// Go to specific move
     pub fn go_to_move(&mut self, move_index: usize) -> GameResult<bool> {
         if move_index > self.replay_data.moves.len() {
-            return Err(GameError::InvalidOperation("Move index out of bounds".to_string()));
+            return Err(GameError::InvalidOperation(
+                "Move index out of bounds".to_string(),
+            ));
         }
-        
+
         self.current_move = move_index;
         self.reset_to_move(move_index)?;
-        
+
         Ok(true)
     }
-    
+
     /// Reset game to initial state
     fn reset_game(&mut self) {
         self.current_game = Game::new(self.replay_data.config.clone()).unwrap();
     }
-    
+
     /// Reset game to specific move
     fn reset_to_move(&mut self, move_index: usize) -> GameResult<()> {
         self.reset_game();
-        
+
         for i in 0..move_index {
             let replay_move = &self.replay_data.moves[i];
             self.current_game.make_move(replay_move.direction)?;
         }
-        
+
         Ok(())
     }
-    
+
     /// Get current game state
     pub fn current_game(&self) -> &Game {
         &self.current_game
     }
-    
+
     /// Get current move index
     pub fn current_move_index(&self) -> usize {
         self.current_move
     }
-    
+
     /// Get total moves
     pub fn total_moves(&self) -> usize {
         self.replay_data.moves.len()
     }
-    
+
     /// Get replay data
     pub fn replay_data(&self) -> &ReplayData {
         &self.replay_data
     }
-    
+
     /// Check if replay is finished
     pub fn is_finished(&self) -> bool {
         self.current_move >= self.replay_data.moves.len()
     }
-    
+
     /// Check if replay is playing
     pub fn is_playing(&self) -> bool {
         self.playing
     }
-    
+
     /// Set playback speed
     pub fn set_speed(&mut self, speed: f32) {
-        self.speed = speed.max(0.1).min(10.0);
+        self.speed = speed.clamp(0.1, 10.0);
     }
-    
+
     /// Get playback speed
     pub fn speed(&self) -> f32 {
         self.speed
     }
-    
+
     /// Get progress percentage
     pub fn progress(&self) -> f32 {
         if self.replay_data.moves.is_empty() {
@@ -350,22 +353,22 @@ impl ReplayManager {
             replays: Vec::new(),
         }
     }
-    
+
     /// Add a replay to the manager
     pub fn add_replay(&mut self, replay: ReplayData) {
         self.replays.push(replay);
     }
-    
+
     /// Get all replays
     pub fn get_replays(&self) -> &[ReplayData] {
         &self.replays
     }
-    
+
     /// Get replay by index
     pub fn get_replay(&self, index: usize) -> Option<&ReplayData> {
         self.replays.get(index)
     }
-    
+
     /// Remove replay by index
     pub fn remove_replay(&mut self, index: usize) -> Option<ReplayData> {
         if index < self.replays.len() {
@@ -374,12 +377,12 @@ impl ReplayManager {
             None
         }
     }
-    
+
     /// Clear all replays
     pub fn clear_replays(&mut self) {
         self.replays.clear();
     }
-    
+
     /// Get number of replays
     pub fn replay_count(&self) -> usize {
         self.replays.len()

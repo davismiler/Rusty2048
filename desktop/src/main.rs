@@ -1,11 +1,11 @@
 // Prevents additional console window on Windows in release
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use rusty2048_core::{Game, GameConfig, Direction};
-use rusty2048_shared::{Theme, I18n, Language, TranslationKey};
+use rusty2048_core::{Direction, Game, GameConfig};
+use rusty2048_shared::{I18n, Language, Theme, TranslationKey};
 use serde::{Deserialize, Serialize};
-use tauri::State;
 use std::sync::{Arc, Mutex};
+use tauri::State;
 
 #[derive(Deserialize)]
 struct SetThemeArgs {
@@ -39,26 +39,26 @@ impl GameManager {
         let i18n = I18n::new();
         Ok(GameManager { game, theme, i18n })
     }
-    
+
     fn get_state(&self) -> GameState {
         let board = self.game.board();
         let size = board.size();
         let mut board_data = vec![vec![0u32; size]; size];
-        
-        for row in 0..size {
-            for col in 0..size {
+
+        for (row, row_data) in board_data.iter_mut().enumerate().take(size) {
+            for (col, cell) in row_data.iter_mut().enumerate().take(size) {
                 if let Ok(tile) = board.get_tile(row, col) {
-                    board_data[row][col] = tile.value;
+                    *cell = tile.value;
                 }
             }
         }
-        
+
         let game_state = match self.game.state() {
             rusty2048_core::GameState::Playing => "playing",
             rusty2048_core::GameState::Won => "won",
             rusty2048_core::GameState::GameOver => "game_over",
         };
-        
+
         GameState {
             board: board_data,
             score: self.game.score().current(),
@@ -73,7 +73,10 @@ impl GameManager {
 }
 
 #[tauri::command]
-async fn make_move(state: State<'_, Arc<Mutex<GameManager>>>, direction: String) -> Result<GameState, String> {
+async fn make_move(
+    state: State<'_, Arc<Mutex<GameManager>>>,
+    direction: String,
+) -> Result<GameState, String> {
     let dir = match direction.as_str() {
         "up" => Direction::Up,
         "down" => Direction::Down,
@@ -83,7 +86,10 @@ async fn make_move(state: State<'_, Arc<Mutex<GameManager>>>, direction: String)
     };
 
     let mut game_manager = state.lock().map_err(|_| "lock poisoned".to_string())?;
-    game_manager.game.make_move(dir).map_err(|e| e.to_string())?;
+    game_manager
+        .game
+        .make_move(dir)
+        .map_err(|e| e.to_string())?;
     Ok(game_manager.get_state())
 }
 
@@ -108,7 +114,10 @@ async fn undo(state: State<'_, Arc<Mutex<GameManager>>>) -> Result<GameState, St
 }
 
 #[tauri::command]
-async fn set_theme(state: State<'_, Arc<Mutex<GameManager>>>, args: SetThemeArgs) -> Result<GameState, String> {
+async fn set_theme(
+    state: State<'_, Arc<Mutex<GameManager>>>,
+    args: SetThemeArgs,
+) -> Result<GameState, String> {
     let mut mgr = state.lock().map_err(|_| "lock poisoned".to_string())?;
     if let Some(theme) = Theme::by_name(&args.theme_name) {
         mgr.theme = theme;
@@ -148,7 +157,10 @@ async fn get_language(state: State<'_, Arc<Mutex<GameManager>>>) -> Result<Strin
 }
 
 #[tauri::command]
-async fn set_language(state: State<'_, Arc<Mutex<GameManager>>>, language_code: String) -> Result<(), String> {
+async fn set_language(
+    state: State<'_, Arc<Mutex<GameManager>>>,
+    language_code: String,
+) -> Result<(), String> {
     let mut game_manager = state.lock().map_err(|_| "lock poisoned".to_string())?;
     if let Some(language) = Language::from_code(&language_code) {
         game_manager.i18n.set_language(language);
@@ -160,16 +172,20 @@ async fn set_language(state: State<'_, Arc<Mutex<GameManager>>>, language_code: 
 
 #[tauri::command]
 async fn get_supported_languages() -> Vec<String> {
-    I18n::new().supported_languages()
+    I18n::new()
+        .supported_languages()
         .iter()
         .map(|lang| lang.code().to_string())
         .collect()
 }
 
 #[tauri::command]
-async fn get_translation(state: State<'_, Arc<Mutex<GameManager>>>, key: String) -> Result<String, String> {
+async fn get_translation(
+    state: State<'_, Arc<Mutex<GameManager>>>,
+    key: String,
+) -> Result<String, String> {
     let game_manager = state.lock().map_err(|_| "lock poisoned".to_string())?;
-    
+
     // Convert string key to TranslationKey enum
     let translation_key = match key.as_str() {
         "score" => TranslationKey::Score,
@@ -196,15 +212,17 @@ async fn get_translation(state: State<'_, Arc<Mutex<GameManager>>>, key: String)
         "help" => TranslationKey::Help,
         "quit" => TranslationKey::Quit,
         "language" => TranslationKey::Help, // Use Help as placeholder for "Language"
-        _ => TranslationKey::Help, // Default fallback
+        _ => TranslationKey::Help,          // Default fallback
     };
-    
+
     Ok(game_manager.i18n.t(&translation_key))
 }
 
 fn main() {
-    let game_manager = Arc::new(Mutex::new(GameManager::new().expect("Failed to create game")));
-    
+    let game_manager = Arc::new(Mutex::new(
+        GameManager::new().expect("Failed to create game"),
+    ));
+
     tauri::Builder::default()
         .manage(game_manager)
         .invoke_handler(tauri::generate_handler![
