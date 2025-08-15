@@ -14,6 +14,7 @@ A modern implementation of the 2048 game written in Rust, supporting multi-platf
 
 - **High Performance**: Built with Rust, zero-cost abstractions
 - **Cross-Platform**: Supports CLI, Web, and Desktop versions
+- **Multi-language Support**: English and Chinese localization (CLI, Web, Desktop)
 - **Modern UI**: Smooth animations and beautiful interfaces
 - **Configurable**: Customizable board size, target score, and more
 - **Replay System**: Record and replay game sessions (CLI version)
@@ -68,7 +69,7 @@ cd web/dist && python3 -m http.server 8000
 # Then open http://localhost:8000 in your browser
 ```
 
-**🌐 Live Demo**: [Play on Vercel](https://rusty2048.vercel.app) *(Coming Soon)*
+**🌐 Live Demo**: [Play on Vercel](https://rusty2048.vercel.app)
 
 ### Controls
 
@@ -79,6 +80,7 @@ cd web/dist && python3 -m http.server 8000
 - **T**: Cycle through themes
 - **1-5**: Select theme directly (1=Classic, 2=Dark, 3=Neon, 4=Retro, 5=Pastel)
 - **H**: Toggle theme help
+- **L**: Switch language (English ↔ Chinese)
 - **P**: Enter replay mode
 - **C**: Toggle statistics charts
 - **I**: Toggle AI mode
@@ -107,11 +109,13 @@ cd web/dist && python3 -m http.server 8000
 #### Desktop Version
 - **Arrow Keys** or **WASD**: Move tiles
 - **Mouse**: Click buttons for New Game, Undo
+- **Language Button**: Click to switch language (English ↔ Chinese)
 - **Theme Buttons**: Click to switch themes
 
 #### Web Version
 - **Arrow Keys** or **WASD**: Move tiles
 - **Mouse/Touch**: Click buttons for New Game, Undo
+- **Language Button**: Click to switch language (English ↔ Chinese)
 - **Theme Buttons**: Click to switch themes
 - **Mobile**: Swipe gestures supported
 
@@ -227,22 +231,6 @@ cargo bench
 cargo test --features proptest
 ```
 
-## 🚀 Deployment
-
-### Vercel Deployment
-
-This project is configured for easy deployment on Vercel:
-
-1. **Fork this repository**
-2. **Connect to Vercel**: Go to [vercel.com](https://vercel.com) and import your fork
-3. **Automatic deployment**: Vercel will automatically build and deploy the web version
-
-For detailed deployment instructions, see [VERCEL_DEPLOY.md](VERCEL_DEPLOY.md).
-
-### Manual Deployment
-
-You can also deploy manually by building the web version and uploading the `web/dist` folder to any static hosting service.
-
 ## 📦 Build Targets
 
 ### CLI Version
@@ -276,9 +264,10 @@ cd desktop && cargo tauri dev
 - [x] Replay system (CLI version)
 - [x] AI mode (CLI version)
 - [x] Statistics charts (CLI version)
+- [x] Multi-language support (English/Chinese)
 
 ### 🔄 Future Enhancements
-- [ ] Multi-language support
+- [x] Multi-language support for Web/Desktop versions
 - [ ] AI mode for Web/Desktop versions
 - [ ] Replay system for Web/Desktop versions
 - [ ] Statistics charts for Web/Desktop versions

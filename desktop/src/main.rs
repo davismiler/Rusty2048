@@ -2,7 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use rusty2048_core::{Game, GameConfig, Direction};
-use rusty2048_shared::Theme;
+use rusty2048_shared::{Theme, I18n, Language, TranslationKey};
 use serde::{Deserialize, Serialize};
 use tauri::State;
 use std::sync::{Arc, Mutex};
@@ -28,6 +28,7 @@ struct GameState {
 struct GameManager {
     game: Game,
     theme: Theme,
+    i18n: I18n,
 }
 
 impl GameManager {
@@ -35,7 +36,8 @@ impl GameManager {
         let config = GameConfig::default();
         let game = Game::new(config)?;
         let theme = Theme::default();
-        Ok(GameManager { game, theme })
+        let i18n = I18n::new();
+        Ok(GameManager { game, theme, i18n })
     }
     
     fn get_state(&self) -> GameState {
@@ -139,6 +141,67 @@ async fn test_connection() -> Result<String, String> {
     Ok("Tauri connection successful!".to_string())
 }
 
+#[tauri::command]
+async fn get_language(state: State<'_, Arc<Mutex<GameManager>>>) -> Result<String, String> {
+    let game_manager = state.lock().map_err(|_| "lock poisoned".to_string())?;
+    Ok(game_manager.i18n.current_language().code().to_string())
+}
+
+#[tauri::command]
+async fn set_language(state: State<'_, Arc<Mutex<GameManager>>>, language_code: String) -> Result<(), String> {
+    let mut game_manager = state.lock().map_err(|_| "lock poisoned".to_string())?;
+    if let Some(language) = Language::from_code(&language_code) {
+        game_manager.i18n.set_language(language);
+        Ok(())
+    } else {
+        Err("Invalid language code".to_string())
+    }
+}
+
+#[tauri::command]
+async fn get_supported_languages() -> Vec<String> {
+    I18n::new().supported_languages()
+        .iter()
+        .map(|lang| lang.code().to_string())
+        .collect()
+}
+
+#[tauri::command]
+async fn get_translation(state: State<'_, Arc<Mutex<GameManager>>>, key: String) -> Result<String, String> {
+    let game_manager = state.lock().map_err(|_| "lock poisoned".to_string())?;
+    
+    // Convert string key to TranslationKey enum
+    let translation_key = match key.as_str() {
+        "score" => TranslationKey::Score,
+        "best" => TranslationKey::Best,
+        "moves" => TranslationKey::Moves,
+        "time" => TranslationKey::Time,
+        "new_game" => TranslationKey::NewGame,
+        "undo" => TranslationKey::Undo,
+        "game_over" => TranslationKey::GameOver,
+        "congratulations" => TranslationKey::Congratulations,
+        "you_won" => TranslationKey::YouWon,
+        "press_r_to_restart" => TranslationKey::PressRToRestart,
+        "continue_playing" => TranslationKey::ContinuePlaying,
+        "controls" => TranslationKey::Controls,
+        "move_tiles" => TranslationKey::MoveTiles,
+        "restart" => TranslationKey::Restart,
+        "undo_move" => TranslationKey::UndoMove,
+        "cycle_theme" => TranslationKey::CycleTheme,
+        "select_theme" => TranslationKey::SelectTheme,
+        "theme_help" => TranslationKey::ThemeHelp,
+        "replay_mode" => TranslationKey::ReplayMode,
+        "statistics_charts" => TranslationKey::StatisticsCharts,
+        "ai_mode" => TranslationKey::AIMode,
+        "help" => TranslationKey::Help,
+        "quit" => TranslationKey::Quit,
+        "language" => TranslationKey::Help, // Use Help as placeholder for "Language"
+        _ => TranslationKey::Help, // Default fallback
+    };
+    
+    Ok(game_manager.i18n.t(&translation_key))
+}
+
 fn main() {
     let game_manager = Arc::new(Mutex::new(GameManager::new().expect("Failed to create game")));
     
@@ -152,7 +215,11 @@ fn main() {
             set_theme,
             get_available_themes,
             get_stats,
-            test_connection
+            test_connection,
+            get_language,
+            set_language,
+            get_supported_languages,
+            get_translation
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

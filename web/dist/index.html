@@ -234,6 +234,7 @@
         <div class="controls">
             <button class="btn" id="newGame">New Game</button>
             <button class="btn" id="undo" disabled>Undo</button>
+            <button class="btn" id="languageToggle">Language</button>
         </div>
 
         <div class="theme-selector">
@@ -255,6 +256,7 @@
 
         let game;
         let currentTheme = 'Classic';
+        let currentLanguage = 'en';
 
         // Initialize the game
         async function initGame() {
@@ -262,8 +264,13 @@
             // Set up panic hook for better error messages
             init_panic_hook();
             game = new Rusty2048Web();
+            
+            // Get current language from game
+            currentLanguage = game.get_language();
+            
             await updateDisplay();
             setupEventListeners();
+            updateLanguageDisplay();
         }
 
         // Update the display
@@ -335,6 +342,47 @@
             // The actual undo availability will be checked when the button is clicked
             const undoBtn = document.getElementById('undo');
             undoBtn.disabled = false;
+        }
+
+        // Toggle language
+        async function toggleLanguage() {
+            const languages = ['en', 'zh'];
+            const currentIndex = languages.indexOf(currentLanguage);
+            const nextIndex = (currentIndex + 1) % languages.length;
+            const newLanguage = languages[nextIndex];
+            
+            await game.set_language(newLanguage);
+            currentLanguage = newLanguage;
+            
+            updateLanguageDisplay();
+            updateTranslations();
+        }
+
+        // Update language display
+        function updateLanguageDisplay() {
+            const langBtn = document.getElementById('languageToggle');
+            const langNames = { 'en': 'English', 'zh': '中文' };
+            langBtn.textContent = langNames[currentLanguage] || 'Language';
+        }
+
+        // Update translations
+        function updateTranslations() {
+            // Update stat labels
+            document.querySelector('.stat-box:nth-child(1) .stat-label').textContent = game.get_translation('score');
+            document.querySelector('.stat-box:nth-child(2) .stat-label').textContent = game.get_translation('best');
+            document.querySelector('.stat-box:nth-child(3) .stat-label').textContent = game.get_translation('moves');
+            
+            // Update button texts
+            document.getElementById('newGame').textContent = game.get_translation('new_game');
+            document.getElementById('undo').textContent = game.get_translation('undo');
+            
+            // Update instructions
+            const instructions = document.querySelector('.instructions');
+            if (currentLanguage === 'zh') {
+                instructions.textContent = '使用方向键或滑动来移动瓦片。合并瓦片以达到2048！';
+            } else {
+                instructions.textContent = 'Use arrow keys or swipe to move tiles. Combine tiles to reach 2048!';
+            }
         }
 
         // Apply theme
@@ -429,6 +477,11 @@
             document.getElementById('undo').addEventListener('click', async () => {
                 await game.undo();
                 await updateDisplay();
+            });
+
+            // Language toggle
+            document.getElementById('languageToggle').addEventListener('click', async () => {
+                await toggleLanguage();
             });
 
             // Theme controls
