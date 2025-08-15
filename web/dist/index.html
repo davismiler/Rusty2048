@@ -271,6 +271,9 @@
             await updateDisplay();
             setupEventListeners();
             updateLanguageDisplay();
+            
+            // Apply default theme
+            await applyTheme('Classic');
         }
 
         // Update the display
@@ -387,29 +390,33 @@
 
         // Apply theme
         async function applyTheme(themeName) {
-            await game.set_theme(themeName);
-            currentTheme = themeName;
-            
-            // Update theme buttons
-            document.querySelectorAll('.theme-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.querySelector(`[data-theme="${themeName}"]`).classList.add('active');
-            
-            // Apply theme colors
-            const theme = await game.get_theme();
-            document.body.style.backgroundColor = theme.background;
-            document.querySelector('.title').style.color = theme.title_color;
-            document.querySelector('.instructions').style.color = theme.text_color;
-            document.querySelector('.grid').style.backgroundColor = theme.grid_background;
-            
-            // Update stat boxes
-            document.querySelectorAll('.stat-box').forEach(box => {
-                box.style.backgroundColor = theme.grid_background;
-            });
-            
-            // Update tiles
-            updateTileColors(theme);
+            try {
+                await game.set_theme(themeName);
+                currentTheme = themeName;
+                
+                // Update theme buttons
+                document.querySelectorAll('.theme-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.querySelector(`[data-theme="${themeName}"]`).classList.add('active');
+                
+                // Apply theme colors
+                const theme = game.get_theme();
+                document.body.style.backgroundColor = theme.background;
+                document.querySelector('.title').style.color = theme.title_color;
+                document.querySelector('.instructions').style.color = theme.text_color;
+                document.querySelector('.grid').style.backgroundColor = theme.grid_background;
+                
+                // Update stat boxes
+                document.querySelectorAll('.stat-box').forEach(box => {
+                    box.style.backgroundColor = theme.grid_background;
+                });
+                
+                // Update tiles
+                updateTileColors(theme);
+            } catch (error) {
+                console.error('Error applying theme:', error);
+            }
         }
 
         // Update tile colors based on theme

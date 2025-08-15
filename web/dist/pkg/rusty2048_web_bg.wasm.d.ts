@@ -15,6 +15,7 @@ export const rusty2048web_get_state: (a: number) => [number, number];
 export const rusty2048web_get_moves: (a: number) => number;
 export const rusty2048web_undo: (a: number) => [number, number];
 export const rusty2048web_set_theme: (a: number, b: number, c: number) => [number, number];
+export const rusty2048web_get_theme: (a: number) => any;
 export const init_panic_hook: () => void;
 export const __wbindgen_exn_store: (a: number) => void;
 export const __externref_table_alloc: () => number;

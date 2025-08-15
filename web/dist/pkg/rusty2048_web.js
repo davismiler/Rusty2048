@@ -343,6 +343,14 @@ export class Rusty2048Web {
             throw takeFromExternrefTable0(ret[0]);
         }
     }
+    /**
+     * Get current theme information
+     * @returns {any}
+     */
+    get_theme() {
+        const ret = wasm.rusty2048web_get_theme(this.__wbg_ptr);
+        return ret;
+    }
 }
 
 async function __wbg_load(module, imports) {
