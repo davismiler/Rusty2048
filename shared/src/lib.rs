@@ -5,6 +5,9 @@
 
 use serde::{Deserialize, Serialize};
 
+pub mod i18n;
+pub use i18n::{I18n, Language, TranslationKey};
+
 /// Color theme for the game
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Theme {

@@ -260,6 +260,7 @@
         <div class="controls">
             <button class="btn" id="newGame">New Game</button>
             <button class="btn" id="undo" disabled>Undo</button>
+            <button class="btn" id="languageToggle">Language</button>
         </div>
 
         <div class="theme-selector">
@@ -397,6 +398,7 @@
         // ----------------- Game logic (Desktop) -------------------
         let gameState = null;
         let currentTheme = 'Classic';
+        let currentLanguage = 'en';
 
         // Initialize the game
         async function initGame() {
@@ -406,8 +408,15 @@
                 gameState = await invoke('get_state');
                 console.log('Game state received:', gameState);
                 console.log('Board data:', gameState?.board);
+                
+                // Get current language
+                currentLanguage = await invoke('get_language');
+                console.log('Current language:', currentLanguage);
+                
                 updateDisplay();
                 setupEventListeners();
+                updateLanguageDisplay();
+                updateTranslations();
                 console.log('✅ Game initialized successfully');
             } catch (error) {
                 console.error('❌ Failed to initialize game:', error);
@@ -487,6 +496,62 @@
         function updateUndoButton() {
             const undoBtn = document.getElementById('undo');
             undoBtn.disabled = !gameState.can_undo;
+        }
+
+        // Toggle language
+        async function toggleLanguage() {
+            try {
+                const languages = ['en', 'zh'];
+                const currentIndex = languages.indexOf(currentLanguage);
+                const nextIndex = (currentIndex + 1) % languages.length;
+                const newLanguage = languages[nextIndex];
+                
+                await invoke('set_language', { languageCode: newLanguage });
+                currentLanguage = newLanguage;
+                
+                updateLanguageDisplay();
+                updateTranslations();
+            } catch (error) {
+                console.error('Failed to toggle language:', error);
+            }
+        }
+
+        // Update language display
+        function updateLanguageDisplay() {
+            const langBtn = document.getElementById('languageToggle');
+            const langNames = { 'en': 'English', 'zh': '中文' };
+            langBtn.textContent = langNames[currentLanguage] || 'Language';
+        }
+
+        // Update translations
+        async function updateTranslations() {
+            try {
+                // Update stat labels
+                const scoreLabel = await invoke('get_translation', { key: 'score' });
+                const bestLabel = await invoke('get_translation', { key: 'best' });
+                const movesLabel = await invoke('get_translation', { key: 'moves' });
+                
+                document.querySelector('.stat-box:nth-child(1) .stat-label').textContent = scoreLabel;
+                document.querySelector('.stat-box:nth-child(2) .stat-label').textContent = bestLabel;
+                document.querySelector('.stat-box:nth-child(3) .stat-label').textContent = movesLabel;
+                
+                // Update button texts
+                const newGameText = await invoke('get_translation', { key: 'new_game' });
+                const undoText = await invoke('get_translation', { key: 'undo' });
+                
+                document.getElementById('newGame').textContent = newGameText;
+                document.getElementById('undo').textContent = undoText;
+                
+                // Update instructions
+                const instructions = document.querySelector('.instructions');
+                if (currentLanguage === 'zh') {
+                    instructions.textContent = '使用方向键移动瓦片。合并瓦片以达到2048！';
+                } else {
+                    instructions.textContent = 'Use arrow keys to move tiles. Combine tiles to reach 2048!';
+                }
+            } catch (error) {
+                console.error('Failed to update translations:', error);
+            }
         }
 
         // Apply theme
@@ -590,6 +655,11 @@
                 } catch (error) {
                     console.error('Undo failed:', error);
                 }
+            });
+
+            // Language toggle
+            document.getElementById('languageToggle')?.addEventListener('click', async () => {
+                await toggleLanguage();
             });
 
             // Theme controls

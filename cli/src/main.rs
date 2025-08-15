@@ -11,9 +11,12 @@ use ratatui::{
 mod theme;
 mod replay;
 mod charts;
+mod language;
 use theme::{ThemeManager, get_tile_color, get_tile_text_color, hex_to_color};
 use replay::ReplayMode;
 use charts::ChartsDisplay;
+use language::LanguageManager;
+use rusty2048_shared::TranslationKey;
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
     execute,
@@ -81,6 +84,7 @@ fn run_game<B: ratatui::backend::Backend>(
     });
     let mut show_charts = false;
     let mut game_start_time = rusty2048_core::get_current_time();
+    let mut language_manager = LanguageManager::new();
     
     loop {
         terminal.draw(|f| {
@@ -190,7 +194,7 @@ fn run_game<B: ratatui::backend::Backend>(
             // Status and controls
             let mut status_text = vec![
                 Line::from(vec![
-                    Span::raw("Score: "),
+                    Span::raw(format!("{}: ", language_manager.t(&TranslationKey::Score))),
                     Span::styled(
                         game.score().current().to_string(),
                         if score_animation > 0 {
@@ -199,44 +203,46 @@ fn run_game<B: ratatui::backend::Backend>(
                             Style::default().fg(hex_to_color(&theme_manager.current_theme.score_color))
                         },
                     ),
-                    Span::raw(" | Best: "),
+                    Span::raw(format!(" | {}: ", language_manager.t(&TranslationKey::Best))),
                     Span::styled(
                         game.score().best().to_string(),
                         Style::default().fg(hex_to_color(&theme_manager.current_theme.best_score_color)),
                     ),
                 ]),
                 Line::from(vec![
-                    Span::raw("Moves: "),
+                    Span::raw(format!("{}: ", language_manager.t(&TranslationKey::Moves))),
                     Span::styled(
                         game.moves().to_string(),
                         Style::default().fg(hex_to_color(&theme_manager.current_theme.moves_color)),
                     ),
-                    Span::raw(" | Time: "),
+                    Span::raw(format!(" | {}: ", language_manager.t(&TranslationKey::Time))),
                     Span::styled(
                         duration,
                         Style::default().fg(hex_to_color(&theme_manager.current_theme.time_color)),
                     ),
                 ]),
                 Line::from(vec![
-                    Span::raw("Controls: "),
+                    Span::raw(format!("{}: ", language_manager.t(&TranslationKey::Controls))),
                     Span::styled("WASD/Arrow Keys", Style::default().fg(Color::White)),
                     Span::raw(" Move | "),
                     Span::styled("R", Style::default().fg(Color::White)),
-                    Span::raw(" Restart | "),
+                    Span::raw(format!(" {} | ", language_manager.t(&TranslationKey::NewGame))),
                     Span::styled("U", Style::default().fg(Color::White)),
-                    Span::raw(" Undo | "),
+                    Span::raw(format!(" {} | ", language_manager.t(&TranslationKey::Undo))),
                     Span::styled("T", Style::default().fg(Color::White)),
                     Span::raw(" Theme | "),
-                                    Span::styled("P", Style::default().fg(Color::White)),
-                Span::raw(" Replay | "),
-                Span::styled("C", Style::default().fg(Color::White)),
-                Span::raw(" Charts | "),
-                Span::styled("I", Style::default().fg(Color::White)),
-                Span::raw(" AI | "),
-                Span::styled("H", Style::default().fg(Color::White)),
-                Span::raw(" Help | "),
-                Span::styled("Q", Style::default().fg(Color::White)),
-                Span::raw(" Quit"),
+                    Span::styled("L", Style::default().fg(Color::White)),
+                    Span::raw(" Language | "),
+                    Span::styled("P", Style::default().fg(Color::White)),
+                    Span::raw(format!(" {} | ", language_manager.t(&TranslationKey::ReplayMode))),
+                    Span::styled("C", Style::default().fg(Color::White)),
+                    Span::raw(format!(" {} | ", language_manager.t(&TranslationKey::StatisticsCharts))),
+                    Span::styled("I", Style::default().fg(Color::White)),
+                    Span::raw(format!(" {} | ", language_manager.t(&TranslationKey::AIMode))),
+                    Span::styled("H", Style::default().fg(Color::White)),
+                    Span::raw(format!(" {} | ", language_manager.t(&TranslationKey::Help))),
+                    Span::styled("Q", Style::default().fg(Color::White)),
+                    Span::raw(format!(" {}", language_manager.t(&TranslationKey::Quit))),
                 ]),
             ];
 
@@ -264,7 +270,11 @@ fn run_game<B: ratatui::backend::Backend>(
                     }
                     status_text.push(Line::from(vec![
                         Span::styled(
-                            "🎉 Congratulations! You won! Press R to restart or continue playing",
+                            format!("{} {} {}", 
+                                language_manager.t(&TranslationKey::Congratulations),
+                                language_manager.t(&TranslationKey::YouWon),
+                                language_manager.t(&TranslationKey::PressRToRestart)
+                            ),
                             Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD),
                         ),
                     ]));
@@ -291,7 +301,10 @@ fn run_game<B: ratatui::backend::Backend>(
                     }
                     status_text.push(Line::from(vec![
                         Span::styled(
-                            "💀 Game Over! Press R to restart",
+                            format!("💀 {} {}", 
+                                language_manager.t(&TranslationKey::GameOver),
+                                language_manager.t(&TranslationKey::PressRToRestart)
+                            ),
                             Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
                         ),
                     ]));
@@ -388,6 +401,17 @@ fn run_game<B: ratatui::backend::Backend>(
                 ]));
             }
 
+            // Add language status
+            status_text.push(Line::from(vec![
+                Span::styled(
+                    format!("🌍 Language: {} ({}) | Press L to switch", 
+                        language_manager.language_name(), 
+                        language_manager.language_code()
+                    ),
+                    Style::default().fg(Color::Blue).add_modifier(Modifier::BOLD),
+                ),
+            ]));
+
             let status = Paragraph::new(status_text)
                 .block(Block::default().borders(Borders::NONE));
             f.render_widget(status, status_area);
@@ -459,7 +483,7 @@ fn run_game<B: ratatui::backend::Backend>(
                             let _ = game.make_move(Direction::Left);
                         }
                     }
-                    KeyCode::Right | KeyCode::Char('d') | KeyCode::Char('l') => {
+                    KeyCode::Right | KeyCode::Char('d') => {
                         if game.state() == GameState::Playing {
                             let _ = game.make_move(Direction::Right);
                         }
@@ -495,6 +519,10 @@ fn run_game<B: ratatui::backend::Backend>(
                     }
                     KeyCode::Char('h') => {
                         show_theme_help = !show_theme_help;
+                    }
+                    KeyCode::Char('l') => {
+                        // Switch language
+                        language_manager.next_language();
                     }
                     KeyCode::Char('p') => {
                         // Enter replay mode

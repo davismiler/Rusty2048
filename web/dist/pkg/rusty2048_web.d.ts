@@ -1,24 +1,33 @@
 /* tslint:disable */
 /* eslint-disable */
-/**
- * Initialize panic hook for better error messages
- */
 export function init_panic_hook(): void;
 export class Rusty2048Web {
   free(): void;
   constructor();
+  /**
+   * Get current language
+   */
+  get_language(): string;
+  /**
+   * Set language
+   */
+  set_language(language_code: string): void;
+  /**
+   * Get supported languages
+   */
+  get_supported_languages(): any;
+  /**
+   * Get translation for a key
+   */
+  get_translation(key: string): string;
+  new_game(): void;
   make_move(direction: string): boolean;
-  get_board(): any;
+  get_board(): Uint32Array;
   get_score(): any;
   get_state(): string;
-  new_game(): void;
-  undo(): void;
   get_moves(): number;
-  get_stats(): any;
-  get_theme(): any;
+  undo(): void;
   set_theme(theme_name: string): void;
-  get_available_themes(): any;
-  get_max_tile(): number;
 }
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
@@ -26,26 +35,26 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly __wbg_rusty2048web_free: (a: number, b: number) => void;
-  readonly rusty2048web_new: () => [number, number, number];
-  readonly rusty2048web_make_move: (a: number, b: number, c: number) => [number, number, number];
-  readonly rusty2048web_get_board: (a: number) => [number, number, number];
-  readonly rusty2048web_get_score: (a: number) => [number, number, number];
-  readonly rusty2048web_get_state: (a: number) => [number, number, number, number];
+  readonly rusty2048web_new: () => number;
+  readonly rusty2048web_get_language: (a: number) => [number, number];
+  readonly rusty2048web_set_language: (a: number, b: number, c: number) => [number, number];
+  readonly rusty2048web_get_supported_languages: (a: number) => any;
+  readonly rusty2048web_get_translation: (a: number, b: number, c: number) => [number, number];
   readonly rusty2048web_new_game: (a: number) => [number, number];
-  readonly rusty2048web_undo: (a: number) => [number, number];
+  readonly rusty2048web_make_move: (a: number, b: number, c: number) => [number, number, number];
+  readonly rusty2048web_get_board: (a: number) => [number, number];
+  readonly rusty2048web_get_score: (a: number) => any;
+  readonly rusty2048web_get_state: (a: number) => [number, number];
   readonly rusty2048web_get_moves: (a: number) => number;
-  readonly rusty2048web_get_stats: (a: number) => [number, number, number];
-  readonly rusty2048web_get_theme: (a: number) => [number, number, number];
+  readonly rusty2048web_undo: (a: number) => [number, number];
   readonly rusty2048web_set_theme: (a: number, b: number, c: number) => [number, number];
-  readonly rusty2048web_get_available_themes: (a: number) => [number, number, number];
-  readonly rusty2048web_get_max_tile: (a: number) => number;
   readonly init_panic_hook: () => void;
-  readonly __wbindgen_malloc: (a: number, b: number) => number;
-  readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_exn_store: (a: number) => void;
   readonly __externref_table_alloc: () => number;
-  readonly __wbindgen_export_4: WebAssembly.Table;
+  readonly __wbindgen_export_2: WebAssembly.Table;
   readonly __wbindgen_free: (a: number, b: number, c: number) => void;
+  readonly __wbindgen_malloc: (a: number, b: number) => number;
+  readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __externref_table_dealloc: (a: number) => void;
   readonly __wbindgen_start: () => void;
 }
