@@ -10,6 +10,34 @@ class Game2048 {
         this.currentLanguage = 'en';
 
         this._animIdSeq = 1; // NEW: 给动画里的 tile 分配临时唯一ID
+        
+        // 动画管理器 
+        this.animationManager = {
+            // 添加动画类 - 使用CSS动画自动清理
+            addAnimationClass: (element, className) => {
+                // 先移除可能存在的动画类，确保动画重新开始
+                element.classList.remove(className);
+                // 强制重排，确保动画重新触发
+                element.offsetHeight;
+                // 添加动画类
+                element.classList.add(className);
+                
+                // 使用一次性事件监听器自动清理
+                element.addEventListener('animationend', () => {
+                    element.classList.remove(className);
+                }, { once: true });
+            },
+            
+            // 淡出元素 - 使用CSS过渡自动清理
+            fadeOutElement: (element) => {
+                element.style.opacity = '0';
+                
+                // 使用一次性事件监听器自动隐藏
+                element.addEventListener('transitionend', () => {
+                    element.style.display = 'none';
+                }, { once: true });
+            }
+        };
     }
 
     async init() {
@@ -258,18 +286,12 @@ class Game2048 {
 
         // 检查分数是否增加
         if (score.current > this.previousScore) {
-            scoreElement.classList.add('score-animation');
-            setTimeout(() => {
-                scoreElement.classList.remove('score-animation');
-            }, 600);
+            this.animationManager.addAnimationClass(scoreElement, 'score-animation');
         }
 
         // 检查最高分是否增加
         if (score.best > this.previousBest) {
-            bestElement.classList.add('score-animation');
-            setTimeout(() => {
-                bestElement.classList.remove('score-animation');
-            }, 600);
+            this.animationManager.addAnimationClass(bestElement, 'score-animation');
         }
 
         scoreElement.textContent = score.current;
@@ -292,18 +314,12 @@ class Game2048 {
             messageEl.textContent = '🎉 Congratulations! You won!';
             messageEl.classList.add('won');
             messageEl.style.display = 'block';
-            messageEl.classList.add('win-animation');
-            setTimeout(() => {
-                messageEl.classList.remove('win-animation');
-            }, 1000);
+            this.animationManager.addAnimationClass(messageEl, 'win-animation');
         } else if (state === 'game_over') {
             messageEl.textContent = '💀 Game Over!';
             messageEl.classList.add('game-over');
             messageEl.style.display = 'block';
-            messageEl.classList.add('game-over-animation');
-            setTimeout(() => {
-                messageEl.classList.remove('game-over-animation');
-            }, 600);
+            this.animationManager.addAnimationClass(messageEl, 'game-over-animation');
         }
     }
 
@@ -578,10 +594,7 @@ class Game2048 {
 
                 // 隐藏拖拽提示
                 if (dragHint) {
-                    dragHint.style.opacity = '0';
-                    setTimeout(() => {
-                        dragHint.style.display = 'none';
-                    }, 300);
+                    this.animationManager.fadeOutElement(dragHint);
                 }
             }
         });
@@ -595,10 +608,7 @@ class Game2048 {
 
                 // 隐藏拖拽提示
                 if (dragHint) {
-                    dragHint.style.opacity = '0';
-                    setTimeout(() => {
-                        dragHint.style.display = 'none';
-                    }, 300);
+                    this.animationManager.fadeOutElement(dragHint);
                 }
             }
         });
@@ -612,10 +622,7 @@ class Game2048 {
 
                 // 隐藏拖拽提示
                 if (dragHint) {
-                    dragHint.style.opacity = '0';
-                    setTimeout(() => {
-                        dragHint.style.display = 'none';
-                    }, 300);
+                    this.animationManager.fadeOutElement(dragHint);
                 }
             }
         });

@@ -189,7 +189,7 @@ body {
 
 /* 分数动画 */
 .score-animation {
-    animation: score-pop 0.6s ease-out;
+    animation: score-pop 0.6s ease-out forwards;
 }
 
 @keyframes score-pop {
@@ -202,12 +202,13 @@ body {
     }
     100% {
         transform: scale(1);
+        color: inherit;
     }
 }
 
 /* 游戏结束动画 */
 .game-over-animation {
-    animation: game-over-shake 0.6s ease-in-out;
+    animation: game-over-shake 0.6s ease-in-out forwards;
 }
 
 @keyframes game-over-shake {
@@ -218,7 +219,7 @@ body {
 
 /* 胜利动画 */
 .win-animation {
-    animation: win-celebration 1s ease-in-out;
+    animation: win-celebration 1s ease-in-out forwards;
 }
 
 @keyframes win-celebration {
