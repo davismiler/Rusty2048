@@ -153,20 +153,6 @@ export class EventManager {
             await this.game.updateDisplay();
         });
 
-
-
-        // 侧边菜单按钮
-        document.getElementById('newGameMenu').addEventListener('click', async () => {
-            await this.game.handleNewGame();
-            this.closeMenu();
-        });
-
-        document.getElementById('undoMenu').addEventListener('click', async () => {
-            await this.game.undo();
-            await this.game.updateDisplay();
-            this.closeMenu();
-        });
-
         document.getElementById('languageToggleMenu').addEventListener('click', async () => {
             await this.game.toggleLanguage();
             this.closeMenu();
