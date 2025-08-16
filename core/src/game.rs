@@ -177,6 +177,36 @@ impl Game {
         Ok(())
     }
 
+    /// Load game from saved state
+    pub fn load_from_state(&mut self, board_data: Vec<u32>, score: Score, moves: u32, state: GameState) -> GameResult<()> {
+        // Validate board data
+        let expected_size = self.config.board_size * self.config.board_size;
+        if board_data.len() != expected_size {
+            return Err(GameError::InvalidBoardSize { size: board_data.len() });
+        }
+
+        // Create board from data
+        let mut tiles = Vec::new();
+        for row in 0..self.config.board_size {
+            let mut row_tiles = Vec::new();
+            for col in 0..self.config.board_size {
+                let index = row * self.config.board_size + col;
+                row_tiles.push(Tile::new(board_data[index]));
+            }
+            tiles.push(row_tiles);
+        }
+
+        // Update game state using the public method
+        self.board = Board::from_tiles(tiles)?;
+        self.score = score;
+        self.moves = moves;
+        self.state = state;
+        self.previous_board = None;
+        self.previous_score = None;
+
+        Ok(())
+    }
+
     /// Add a random tile to the board
     fn add_random_tile(&mut self) -> GameResult<()> {
         let empty_positions = self.board.empty_positions();

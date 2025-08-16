@@ -149,6 +149,20 @@ impl Board {
         }
     }
 
+    /// Create board from tile data
+    pub fn from_tiles(tiles: Vec<Vec<Tile>>) -> GameResult<Self> {
+        if tiles.is_empty() || tiles[0].is_empty() {
+            return Err(GameError::InvalidBoardSize { size: 0 });
+        }
+        
+        let size = tiles.len();
+        if tiles.iter().any(|row| row.len() != size) {
+            return Err(GameError::InvalidBoardSize { size });
+        }
+        
+        Ok(Self { tiles, size })
+    }
+
     /// Get the maximum tile value on the board
     pub fn max_tile(&self) -> u32 {
         self.tiles

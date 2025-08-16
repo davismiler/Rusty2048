@@ -21,6 +21,10 @@ export class Rusty2048Web {
    */
   get_translation(key: string): string;
   new_game(): void;
+  /**
+   * Load game from saved state
+   */
+  load_game(board_data: Uint32Array, score_data: any, moves: number, state: string): void;
   make_move(direction: string): boolean;
   get_board(): Uint32Array;
   get_score(): any;
@@ -45,6 +49,7 @@ export interface InitOutput {
   readonly rusty2048web_get_supported_languages: (a: number) => any;
   readonly rusty2048web_get_translation: (a: number, b: number, c: number) => [number, number];
   readonly rusty2048web_new_game: (a: number) => [number, number];
+  readonly rusty2048web_load_game: (a: number, b: number, c: number, d: any, e: number, f: number, g: number) => [number, number];
   readonly rusty2048web_make_move: (a: number, b: number, c: number) => [number, number, number];
   readonly rusty2048web_get_board: (a: number) => [number, number];
   readonly rusty2048web_get_score: (a: number) => any;
@@ -54,12 +59,12 @@ export interface InitOutput {
   readonly rusty2048web_set_theme: (a: number, b: number, c: number) => [number, number];
   readonly rusty2048web_get_theme: (a: number) => any;
   readonly init_panic_hook: () => void;
-  readonly __wbindgen_exn_store: (a: number) => void;
-  readonly __externref_table_alloc: () => number;
-  readonly __wbindgen_export_2: WebAssembly.Table;
-  readonly __wbindgen_free: (a: number, b: number, c: number) => void;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
+  readonly __wbindgen_exn_store: (a: number) => void;
+  readonly __externref_table_alloc: () => number;
+  readonly __wbindgen_export_4: WebAssembly.Table;
+  readonly __wbindgen_free: (a: number, b: number, c: number) => void;
   readonly __externref_table_dealloc: (a: number) => void;
   readonly __wbindgen_start: () => void;
 }

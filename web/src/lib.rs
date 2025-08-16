@@ -115,6 +115,25 @@ impl Rusty2048Web {
             .map_err(|e| JsValue::from_str(&e.to_string()))
     }
 
+    /// Load game from saved state
+    pub fn load_game(&mut self, board_data: Vec<u32>, score_data: JsValue, moves: u32, state: &str) -> Result<(), JsValue> {
+        // Parse score data
+        let score: rusty2048_core::Score = serde_wasm_bindgen::from_value(score_data)
+            .map_err(|e| JsValue::from_str(&format!("Failed to parse score: {}", e)))?;
+
+        // Parse game state
+        let game_state = match state {
+            "playing" => GameState::Playing,
+            "won" => GameState::Won,
+            "game_over" => GameState::GameOver,
+            _ => return Err(JsValue::from_str("Invalid game state")),
+        };
+
+        // Load the game state
+        self.game.load_from_state(board_data, score, moves, game_state)
+            .map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+
     pub fn make_move(&mut self, direction: &str) -> Result<bool, JsValue> {
         let dir = match direction {
             "up" => Direction::Up,

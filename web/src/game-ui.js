@@ -108,6 +108,9 @@ export class UIManager {
 
         this.updateLanguageDisplay();
         this.updateTranslations();
+        
+        // Save settings
+        this.game.saveSettings();
     }
 
     updateLanguageDisplay() {
@@ -167,6 +170,9 @@ export class UIManager {
 
         // Update tiles
         this.updateTileColors(theme);
+        
+        // Save settings
+        this.game.saveSettings();
     }
 
     updateTileColors(theme) {
