@@ -8,8 +8,6 @@ export class GameStorage {
     // 保存游戏状态
     saveGameState(gameState) {
         try {
-            this.updateSaveStatus('saving');
-            
             // 确保board是普通数组
             const boardArray = Array.isArray(gameState.board) ? gameState.board : Array.from(gameState.board);
             
@@ -23,12 +21,9 @@ export class GameStorage {
             };
             
             localStorage.setItem(this.STORAGE_KEY, JSON.stringify(stateToSave));
-            
-            this.updateSaveStatus('saved');
             return true;
         } catch (error) {
             console.error('保存游戏状态失败:', error);
-            this.updateSaveStatus('error');
             return false;
         }
     }
@@ -166,43 +161,5 @@ export class GameStorage {
         }
     }
 
-    // 更新保存状态指示器
-    updateSaveStatus(status) {
-        const saveStatus = document.getElementById('saveStatus');
-        const saveText = document.getElementById('saveText');
-        
-        if (!saveStatus || !saveText) return;
-        
-        // 移除所有状态类
-        saveStatus.classList.remove('saving', 'saved', 'error');
-        
-        switch (status) {
-            case 'saving':
-                saveStatus.classList.add('saving');
-                saveText.textContent = '正在保存...';
-                break;
-            case 'saved':
-                saveStatus.classList.add('saved');
-                saveText.textContent = '游戏进度已自动保存';
-                // 3秒后隐藏保存状态
-                setTimeout(() => {
-                    if (saveStatus.classList.contains('saved')) {
-                        saveStatus.style.opacity = '0.3';
-                    }
-                }, 3000);
-                break;
-            case 'error':
-                saveStatus.classList.add('error');
-                saveText.textContent = '保存失败，请检查存储空间';
-                // 5秒后恢复默认状态
-                setTimeout(() => {
-                    if (saveStatus.classList.contains('error')) {
-                        saveStatus.classList.remove('error');
-                        saveStatus.style.opacity = '0.8';
-                        saveText.textContent = '游戏进度已自动保存';
-                    }
-                }, 5000);
-                break;
-        }
-    }
+
 }
