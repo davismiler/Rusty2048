@@ -154,12 +154,12 @@ impl Board {
         if tiles.is_empty() || tiles[0].is_empty() {
             return Err(GameError::InvalidBoardSize { size: 0 });
         }
-        
+
         let size = tiles.len();
         if tiles.iter().any(|row| row.len() != size) {
             return Err(GameError::InvalidBoardSize { size });
         }
-        
+
         Ok(Self { tiles, size })
     }
 

@@ -178,11 +178,19 @@ impl Game {
     }
 
     /// Load game from saved state
-    pub fn load_from_state(&mut self, board_data: Vec<u32>, score: Score, moves: u32, state: GameState) -> GameResult<()> {
+    pub fn load_from_state(
+        &mut self,
+        board_data: Vec<u32>,
+        score: Score,
+        moves: u32,
+        state: GameState,
+    ) -> GameResult<()> {
         // Validate board data
         let expected_size = self.config.board_size * self.config.board_size;
         if board_data.len() != expected_size {
-            return Err(GameError::InvalidBoardSize { size: board_data.len() });
+            return Err(GameError::InvalidBoardSize {
+                size: board_data.len(),
+            });
         }
 
         // Create board from data

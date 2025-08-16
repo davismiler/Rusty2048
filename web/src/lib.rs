@@ -116,7 +116,13 @@ impl Rusty2048Web {
     }
 
     /// Load game from saved state
-    pub fn load_game(&mut self, board_data: Vec<u32>, score_data: JsValue, moves: u32, state: &str) -> Result<(), JsValue> {
+    pub fn load_game(
+        &mut self,
+        board_data: Vec<u32>,
+        score_data: JsValue,
+        moves: u32,
+        state: &str,
+    ) -> Result<(), JsValue> {
         // Parse score data
         let score: rusty2048_core::Score = serde_wasm_bindgen::from_value(score_data)
             .map_err(|e| JsValue::from_str(&format!("Failed to parse score: {}", e)))?;
@@ -130,7 +136,8 @@ impl Rusty2048Web {
         };
 
         // Load the game state
-        self.game.load_from_state(board_data, score, moves, game_state)
+        self.game
+            .load_from_state(board_data, score, moves, game_state)
             .map_err(|e| JsValue::from_str(&e.to_string()))
     }
 
