@@ -49,6 +49,8 @@ export class UIManager {
             const bestElement = document.getElementById('best');
             const movesElement = document.getElementById('moves');
 
+            if (!scoreElement || !bestElement || !movesElement) return;
+
             // Check if score increased
             if (score.current > this.previousScore) {
                 this.animationManager.addAnimationClass(scoreElement, 'score-animation');
@@ -74,6 +76,8 @@ export class UIManager {
         this.game.get_state().then(state => {
             const messageEl = document.getElementById('message');
 
+            if (!messageEl) return;
+
             messageEl.style.display = 'none';
             messageEl.className = 'message';
 
@@ -93,7 +97,9 @@ export class UIManager {
 
     updateUndoButton() {
         const undoBtn = document.getElementById('undo');
-        undoBtn.disabled = false;
+        if (undoBtn) {
+            undoBtn.disabled = false;
+        }
     }
 
     // ===== Language Management =====
@@ -114,27 +120,49 @@ export class UIManager {
     }
 
     updateLanguageDisplay() {
-        const langBtn = document.getElementById('languageToggle');
-        const langNames = { 'en': 'English', 'zh': '中文' };
-        langBtn.textContent = langNames[this.currentLanguage] || 'Language';
+        // 更新侧边菜单中的语言切换按钮
+        const languageToggleMenu = document.getElementById('languageToggleMenu');
+        if (languageToggleMenu) {
+            languageToggleMenu.textContent = this.currentLanguage === 'zh' ? 'English' : '中文';
+        }
     }
 
     updateTranslations() {
         // Update stat labels
-        document.querySelector('.stat-box:nth-child(1) .stat-label').textContent = this.game.get_translation('score');
-        document.querySelector('.stat-box:nth-child(2) .stat-label').textContent = this.game.get_translation('best');
-        document.querySelector('.stat-box:nth-child(3) .stat-label').textContent = this.game.get_translation('moves');
+        const scoreLabel = document.querySelector('.stat-box:nth-child(1) .stat-label');
+        const bestLabel = document.querySelector('.stat-box:nth-child(2) .stat-label');
+        const movesLabel = document.querySelector('.stat-box:nth-child(3) .stat-label');
+        
+        if (scoreLabel) scoreLabel.textContent = this.game.get_translation('score');
+        if (bestLabel) bestLabel.textContent = this.game.get_translation('best');
+        if (movesLabel) movesLabel.textContent = this.game.get_translation('moves');
 
         // Update button texts
-        document.getElementById('newGame').textContent = this.game.get_translation('new_game');
-        document.getElementById('undo').textContent = this.game.get_translation('undo');
+        const newGameBtn = document.getElementById('newGame');
+        const undoBtn = document.getElementById('undo');
+        
+        if (newGameBtn) newGameBtn.textContent = this.game.get_translation('new_game');
+        if (undoBtn) undoBtn.textContent = this.game.get_translation('undo');
+        
+        // Update side menu button texts
+        const newGameMenu = document.getElementById('newGameMenu');
+        const undoMenu = document.getElementById('undoMenu');
+        const languageToggleMenu = document.getElementById('languageToggleMenu');
+        
+        if (newGameMenu) newGameMenu.textContent = this.game.get_translation('new_game');
+        if (undoMenu) undoMenu.textContent = this.game.get_translation('undo');
+        if (languageToggleMenu) {
+            languageToggleMenu.textContent = this.currentLanguage === 'zh' ? 'English' : '中文';
+        }
 
         // Update instructions
         const instructions = document.querySelector('.instructions');
-        if (this.currentLanguage === 'zh') {
-            instructions.textContent = '使用方向键、鼠标拖拽或滑动来移动瓦片。合并瓦片以达到2048！';
-        } else {
-            instructions.textContent = 'Use arrow keys, mouse drag, or swipe to move tiles. Combine tiles to reach 2048!';
+        if (instructions) {
+            if (this.currentLanguage === 'zh') {
+                instructions.textContent = '使用方向键、鼠标拖拽或滑动来移动瓦片。合并瓦片以达到2048！';
+            } else {
+                instructions.textContent = 'Use arrow keys, mouse drag, or swipe to move tiles. Combine tiles to reach 2048!';
+            }
         }
     }
 
@@ -151,21 +179,33 @@ export class UIManager {
         await this.game.set_theme(themeName);
         this.currentTheme = themeName;
 
-        // Update theme buttons
-        document.querySelectorAll('.theme-btn').forEach(btn => {
-            btn.classList.remove('active');
+        // Update theme buttons (both main interface and side menu)
+        const allThemeBtns = document.querySelectorAll('.theme-btn');
+        const activeThemeBtns = document.querySelectorAll(`[data-theme="${themeName}"]`);
+        
+        allThemeBtns.forEach(btn => {
+            if (btn) btn.classList.remove('active');
         });
-        document.querySelector(`[data-theme="${themeName}"]`).classList.add('active');
+        activeThemeBtns.forEach(btn => {
+            if (btn) btn.classList.add('active');
+        });
 
         // Apply theme colors
         const theme = this.game.get_theme();
         document.body.style.backgroundColor = theme.background;
-        document.querySelector('.title').style.color = theme.title_color;
-        document.querySelector('.instructions').style.color = theme.text_color;
+        
+        const titleElement = document.querySelector('.title');
+        const instructionsElement = document.querySelector('.instructions');
+        
+        if (titleElement) titleElement.style.color = theme.title_color;
+        if (instructionsElement) instructionsElement.style.color = theme.text_color;
 
         // Update stat boxes
-        document.querySelectorAll('.stat-box').forEach(box => {
-            box.style.backgroundColor = theme.grid_background;
+        const statBoxes = document.querySelectorAll('.stat-box');
+        statBoxes.forEach(box => {
+            if (box) {
+                box.style.backgroundColor = theme.grid_background;
+            }
         });
 
         // Update tiles

@@ -3,13 +3,13 @@ export class EventManager {
         this.game = gameInstance;
         this.canvasManager = canvasManager;
         this.animationManager = animationManager;
-        
+
         // Mouse drag related state
         this.isDragging = false;
         this.startX = null;
         this.startY = null;
         this.dragThreshold = 30;
-        
+
         // Touch related state
         this.touchStartX = null;
         this.touchStartY = null;
@@ -143,6 +143,7 @@ export class EventManager {
     }
 
     setupButtonControls() {
+        // 主界面按钮
         document.getElementById('newGame').addEventListener('click', async () => {
             await this.game.handleNewGame();
         });
@@ -152,25 +153,106 @@ export class EventManager {
             await this.game.updateDisplay();
         });
 
-        document.getElementById('languageToggle').addEventListener('click', async () => {
-            await this.game.toggleLanguage();
+
+
+        // 侧边菜单按钮
+        document.getElementById('newGameMenu').addEventListener('click', async () => {
+            await this.game.handleNewGame();
+            this.closeMenu();
         });
 
+        document.getElementById('undoMenu').addEventListener('click', async () => {
+            await this.game.undo();
+            await this.game.updateDisplay();
+            this.closeMenu();
+        });
+
+        document.getElementById('languageToggleMenu').addEventListener('click', async () => {
+            await this.game.toggleLanguage();
+            this.closeMenu();
+        });
+
+        // 主题按钮（包括主界面和侧边菜单）
         document.querySelectorAll('.theme-btn').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const themeName = btn.getAttribute('data-theme');
                 await this.game.applyTheme(themeName);
+
+                // 更新所有主题按钮的状态
+                document.querySelectorAll('.theme-btn').forEach(b => {
+                    b.classList.remove('active');
+                });
+                btn.classList.add('active');
             });
+        });
+
+        // 侧边菜单控制
+        this.setupMenuControls();
+    }
+
+    setupMenuControls() {
+        const menuToggle = document.getElementById('menuToggle');
+        const menuClose = document.getElementById('menuClose');
+        const sideMenu = document.getElementById('sideMenu');
+        const menuOverlay = document.getElementById('menuOverlay');
+
+        // 打开菜单
+        menuToggle.addEventListener('click', () => {
+            this.openMenu();
+        });
+
+        // 关闭菜单
+        menuClose.addEventListener('click', () => {
+            this.closeMenu();
+        });
+
+        // 点击遮罩关闭菜单
+        menuOverlay.addEventListener('click', () => {
+            this.closeMenu();
+        });
+
+        // ESC键关闭菜单
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && sideMenu.classList.contains('open')) {
+                this.closeMenu();
+            }
         });
     }
 
+    openMenu() {
+        const sideMenu = document.getElementById('sideMenu');
+        const menuOverlay = document.getElementById('menuOverlay');
+
+        sideMenu.classList.add('open');
+        menuOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    closeMenu() {
+        const sideMenu = document.getElementById('sideMenu');
+        const menuOverlay = document.getElementById('menuOverlay');
+
+        sideMenu.classList.remove('open');
+        menuOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
     setupTouchControls() {
-        document.addEventListener('touchstart', (e) => {
+        const canvasElement = this.canvasManager.getCanvas();
+
+        if (!canvasElement) return;
+
+        canvasElement.addEventListener('touchstart', (e) => {
+            // 阻止默认行为，防止页面滚动
+            e.preventDefault();
             this.touchStartX = e.touches[0].clientX;
             this.touchStartY = e.touches[0].clientY;
-        });
+        }, { passive: false });
 
-        document.addEventListener('touchend', (e) => {
+        canvasElement.addEventListener('touchend', (e) => {
+            // 阻止默认行为
+            e.preventDefault();
+
             if (!this.touchStartX || !this.touchStartY) return;
 
             const endX = e.changedTouches[0].clientX;
@@ -178,6 +260,13 @@ export class EventManager {
 
             const diffX = this.touchStartX - endX;
             const diffY = this.touchStartY - endY;
+
+            // 添加最小滑动距离阈值
+            const minSwipeDistance = 30;
+            if (Math.abs(diffX) < minSwipeDistance && Math.abs(diffY) < minSwipeDistance) {
+                this.touchStartX = this.touchStartY = null;
+                return;
+            }
 
             let direction = null;
             if (Math.abs(diffX) > Math.abs(diffY)) {
@@ -207,7 +296,12 @@ export class EventManager {
             }
 
             this.touchStartX = this.touchStartY = null;
-        });
+        }, { passive: false });
+
+        // 防止触摸事件冒泡到document
+        canvasElement.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
     }
 
     setupResizeHandler() {

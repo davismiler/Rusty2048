@@ -13,6 +13,9 @@
         <div class="board-screen">
             <div class="game-container">
                 <div class="header">
+                    <button class="menu-toggle" id="menuToggle" title="Settings">
+                        <i class="fas fa-bars"></i>
+                    </button>
                     <div class="title">Rusty2048</div>
                     <a href="https://github.com/honkinglin/rusty2048" target="_blank" class="github-link" title="View on GitHub">
                         <i class="fab fa-github"></i>
@@ -43,19 +46,9 @@
                 <div class="controls">
                     <button class="btn" id="newGame">New Game</button>
                     <button class="btn" id="undo" disabled>Undo</button>
-                    <button class="btn" id="languageToggle">Language</button>
                 </div>
 
-                <div class="theme-selector">
-                    <div class="theme-label">Themes:</div>
-                    <div class="theme-buttons">
-                        <button class="theme-btn active" data-theme="Classic">Classic</button>
-                        <button class="theme-btn" data-theme="Dark">Dark</button>
-                        <button class="theme-btn" data-theme="Neon">Neon</button>
-                        <button class="theme-btn" data-theme="Retro">Retro</button>
-                        <button class="theme-btn" data-theme="Pastel">Pastel</button>
-                    </div>
-                </div>
+
 
                 <div class="instructions">
                     Use arrow keys, mouse drag, or swipe to move tiles. Combine tiles to reach 2048!
@@ -63,6 +56,59 @@
             </div>
         </div>
     </div>
+
+    <!-- 侧边菜单 -->
+    <div class="side-menu" id="sideMenu">
+        <div class="menu-header">
+            <h3>Settings</h3>
+            <button class="menu-close" id="menuClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="menu-content">
+            <div class="menu-section">
+                <h4>Theme</h4>
+                <div class="theme-buttons">
+                    <button class="theme-btn active" data-theme="Classic">Classic</button>
+                    <button class="theme-btn" data-theme="Dark">Dark</button>
+                    <button class="theme-btn" data-theme="Neon">Neon</button>
+                    <button class="theme-btn" data-theme="Retro">Retro</button>
+                    <button class="theme-btn" data-theme="Pastel">Pastel</button>
+                </div>
+            </div>
+            
+            <div class="menu-section">
+                <h4>Game</h4>
+                <div class="menu-item">
+                    <button class="menu-btn" id="newGameMenu">New Game</button>
+                </div>
+                <div class="menu-item">
+                    <button class="menu-btn" id="undoMenu" disabled>Undo</button>
+                </div>
+            </div>
+            
+            <div class="menu-section">
+                <h4>Language</h4>
+                <div class="menu-item">
+                    <button class="menu-btn" id="languageToggleMenu">Toggle Language</button>
+                </div>
+            </div>
+            
+            <div class="menu-section">
+                <h4>About</h4>
+                <div class="menu-item">
+                    <a href="https://github.com/honkinglin/rusty2048" target="_blank" class="menu-link">
+                        <i class="fab fa-github"></i>
+                        View on GitHub
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 菜单遮罩 -->
+    <div class="menu-overlay" id="menuOverlay"></div>
 
     <script type="module" src="/src/main.js"></script>
 </body>

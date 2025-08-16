@@ -67,6 +67,36 @@ body {
 .header {
     margin-bottom: 20px;
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.menu-toggle {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #776e65;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    min-height: 40px;
+    flex-shrink: 0;
+}
+
+.menu-toggle:hover {
+    background: rgba(119, 110, 101, 0.1);
+    color: #776e65;
+}
+
+.menu-toggle:active {
+    transform: scale(0.95);
 }
 
 .title {
@@ -75,13 +105,15 @@ body {
     color: #776e65;
     margin-bottom: 15px;
     transition: color 0.3s ease;
+    flex: 1;
+    text-align: center;
+    margin-left: 40px;
+    margin-right: 40px;
 }
 
 /* GitHub图标 */
 .github-link {
-    position: absolute;
-    top: 0;
-    right: 0;
+    position: relative;
     width: 45px;
     height: 45px;
     background: #333;
@@ -92,6 +124,7 @@ body {
     color: white;
     text-decoration: none;
     transition: all 0.3s ease;
+    flex-shrink: 0;
 }
 
 .github-link:hover {
@@ -231,7 +264,7 @@ body {
 .controls {
     margin-bottom: 15px;
     display: flex;
-    gap: 8px;
+    gap: 12px;
     justify-content: center;
 }
 
@@ -397,6 +430,8 @@ body {
     .title {
         font-size: 28px;
         margin-bottom: 6px;
+        margin-left: 36px;
+        margin-right: 36px;
     }
     
     .github-link {
@@ -406,6 +441,12 @@ body {
     
     .github-link i {
         font-size: 16px;
+    }
+    
+    .menu-toggle {
+        min-width: 36px;
+        min-height: 36px;
+        font-size: 22px;
     }
     
     .stats {
@@ -433,14 +474,14 @@ body {
     }
     
     .controls {
-        gap: 5px;
+        gap: 8px;
         margin-bottom: 6px;
     }
     
     .btn {
-        padding: 6px 12px;
-        font-size: 12px;
-        min-width: 80px;
+        padding: 8px 16px;
+        font-size: 13px;
+        min-width: 85px;
     }
     
     .theme-selector {
@@ -515,6 +556,8 @@ body {
     .title {
         font-size: 18px;
         margin-bottom: 6px;
+        margin-left: 28px;
+        margin-right: 28px;
     }
     
     .github-link {
@@ -524,6 +567,12 @@ body {
     
     .github-link i {
         font-size: 12px;
+    }
+    
+    .menu-toggle {
+        min-width: 28px;
+        min-height: 28px;
+        font-size: 18px;
     }
     
     .stats {
@@ -552,18 +601,16 @@ body {
     
     .controls {
         flex-direction: row;
-        gap: 4px;
+        gap: 8px;
         margin-bottom: 6px;
-        flex-wrap: wrap;
         justify-content: center;
     }
     
     .btn {
-        padding: 6px 10px;
-        font-size: 10px;
-        flex: 1;
-        min-width: 70px;
-        max-width: none;
+        padding: 8px 16px;
+        font-size: 12px;
+        min-width: 80px;
+        max-width: 120px;
     }
     
     .theme-selector {
@@ -642,6 +689,8 @@ body {
     .title {
         font-size: 24px;
         margin-bottom: 6px;
+        margin-left: 32px;
+        margin-right: 32px;
     }
     
     .github-link {
@@ -651,6 +700,12 @@ body {
     
     .github-link i {
         font-size: 14px;
+    }
+    
+    .menu-toggle {
+        min-width: 32px;
+        min-height: 32px;
+        font-size: 20px;
     }
     
     .stats {
@@ -677,14 +732,14 @@ body {
     }
     
     .controls {
-        gap: 8px;
+        gap: 10px;
         margin-bottom: 10px;
     }
     
     .btn {
-        padding: 8px 15px;
-        font-size: 12px;
-        min-width: 80px;
+        padding: 10px 20px;
+        font-size: 14px;
+        min-width: 90px;
     }
     
     .theme-selector {
@@ -726,6 +781,8 @@ body {
     
     .title {
         font-size: 20px;
+        margin-left: 24px;
+        margin-right: 24px;
     }
     
     .stats {
@@ -790,15 +847,15 @@ body {
     }
     
     .controls {
-        flex-direction: column;
-        gap: 4px;
+        flex-direction: row;
+        gap: 6px;
         margin-bottom: 10px;
     }
     
     .btn {
-        padding: 6px 10px;
-        font-size: 10px;
-        min-width: 70px;
+        padding: 6px 12px;
+        font-size: 11px;
+        min-width: 75px;
     }
     
     .theme-selector {
@@ -846,4 +903,213 @@ body {
     background: #2a2a2a;
     border-radius: 1px;
     transform: translateX(-50%);
+}
+
+/* 侧边菜单样式 */
+.side-menu {
+    position: fixed;
+    top: 0;
+    left: -320px;
+    width: 320px;
+    height: 100vh;
+    background: #faf8ef;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    transition: left 0.3s ease;
+    overflow-y: auto;
+    border-radius: 0 20px 20px 0;
+}
+
+.side-menu.open {
+    left: 0;
+}
+
+.menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+    background: #faf8ef;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.menu-header h3 {
+    font-size: 24px;
+    color: #776e65;
+    margin: 0;
+    font-weight: bold;
+}
+
+.menu-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #776e65;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    min-height: 36px;
+}
+
+.menu-close:hover {
+    background: rgba(119, 110, 101, 0.1);
+    color: #776e65;
+}
+
+.menu-content {
+    padding: 20px;
+}
+
+.menu-section {
+    margin-bottom: 30px;
+}
+
+.menu-section h4 {
+    font-size: 18px;
+    color: #776e65;
+    margin-bottom: 15px;
+    font-weight: bold;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 8px;
+}
+
+.menu-item {
+    margin-bottom: 10px;
+}
+
+.menu-btn {
+    width: 100%;
+    padding: 12px 16px;
+    background: #8f7a66;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+}
+
+.menu-btn:hover {
+    background: #7f6a56;
+    transform: translateY(-1px);
+}
+
+.menu-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.menu-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #8f7a66;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.menu-link:hover {
+    background: #7f6a56;
+    transform: translateY(-1px);
+}
+
+.menu-link i {
+    font-size: 18px;
+}
+
+/* 主题按钮在菜单中的样式 */
+.side-menu .theme-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.side-menu .theme-btn {
+    padding: 12px 16px;
+    background: #8f7a66;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.side-menu .theme-btn:hover {
+    background: #7f6a56;
+    transform: translateY(-1px);
+}
+
+.side-menu .theme-btn.active {
+    background: #776e65;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* 菜单遮罩 */
+.menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.menu-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* 移动端优化 */
+@media (max-width: 480px) {
+    .side-menu {
+        width: 280px;
+        left: -280px;
+    }
+    
+    .menu-header {
+        padding: 15px;
+    }
+    
+    .menu-header h3 {
+        font-size: 20px;
+    }
+    
+    .menu-content {
+        padding: 15px;
+    }
+    
+    .menu-section h4 {
+        font-size: 16px;
+    }
+    
+    .menu-btn, .menu-link {
+        padding: 10px 14px;
+        font-size: 14px;
+    }
+    
+    .side-menu .theme-btn {
+        padding: 10px 14px;
+        font-size: 12px;
+    }
 }
