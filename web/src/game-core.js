@@ -96,44 +96,88 @@ export class GameCore {
         this.storage.clearGameState();
     }
 
-    // Start auto-save functionality
+    // Start auto-save functionality using requestIdleCallback
     startAutoSave() {
-        // Save every 30 seconds
-        this.autoSaveInterval = setInterval(() => {
-            this.saveGameState();
-        }, 30000);
+        if (!window.requestIdleCallback) return;
+
+        this.lastSaveTime = Date.now();
+        this.autoSaveInterval = 3000; // 3 seconds minimum interval
+        this.isAutoSaveActive = true;
+        
+        this.scheduleNextAutoSave();
+    }
+
+    // Schedule next auto-save using requestIdleCallback
+    scheduleNextAutoSave() {
+        if (!this.isAutoSaveActive) return;
+
+        const now = Date.now();
+        const timeSinceLastSave = now - this.lastSaveTime;
+        const timeUntilNextSave = Math.max(0, this.autoSaveInterval - timeSinceLastSave);
+
+        // Use requestIdleCallback with a timeout to ensure it runs within the interval
+        this.autoSaveIdleCallback = window.requestIdleCallback(
+            (deadline) => {
+                const currentTime = Date.now();
+                const actualTimeSinceLastSave = currentTime - this.lastSaveTime;
+                
+                // Check if enough time has passed since last save
+                if (actualTimeSinceLastSave >= this.autoSaveInterval) {
+                    if (deadline.timeRemaining() > 0 || deadline.didTimeout) {
+                        this.performAutoSave();
+                    } else {
+                        // If we don't have enough idle time but time has passed, save anyway
+                        this.performAutoSave();
+                    }
+                } else {
+                    // Not enough time has passed, schedule again
+                    const remainingTime = this.autoSaveInterval - actualTimeSinceLastSave;
+                    setTimeout(() => this.scheduleNextAutoSave(), remainingTime);
+                }
+            },
+            { timeout: timeUntilNextSave }
+        );
+    }
+
+    // Perform the actual auto-save
+    async performAutoSave() {
+        if (!this.isAutoSaveActive) return;
+
+        await this.saveGameState();
+        this.lastSaveTime = Date.now();
+
+        // Schedule next auto-save
+        this.scheduleNextAutoSave();
     }
 
     // Stop auto-save
     stopAutoSave() {
-        if (this.autoSaveInterval) {
-            clearInterval(this.autoSaveInterval);
-            this.autoSaveInterval = null;
+        this.isAutoSaveActive = false;
+        
+        if (this.autoSaveIdleCallback) {
+            window.cancelIdleCallback(this.autoSaveIdleCallback);
+            this.autoSaveIdleCallback = null;
         }
     }
 
     // Save current game state
     async saveGameState() {
-        try {
-            const board = await this.game.get_board();
-            const score = await this.game.get_score();
-            const moves = this.game.get_moves();
-            const state = await this.game.get_state();
+        const board = await this.game.get_board();
+        const score = await this.game.get_score();
+        const moves = this.game.get_moves();
+        const state = await this.game.get_state();
 
-            // Convert Uint32Array to regular array for storage
-            const boardArray = Array.isArray(board) ? board : Array.from(board);
+        // Convert Uint32Array to regular array for storage
+        const boardArray = Array.isArray(board) ? board : Array.from(board);
 
-            const gameState = {
-                board: boardArray,
-                score,
-                moves,
-                state
-            };
+        const gameState = {
+            board: boardArray,
+            score,
+            moves,
+            state
+        };
 
-            this.storage.saveGameState(gameState);
-        } catch (error) {
-            console.error('保存游戏状态失败:', error);
-        }
+        this.storage.saveGameState(gameState);
     }
 
     // Save current settings
@@ -162,7 +206,7 @@ export class GameCore {
 
         this.previousBoard = after;
 
-        // Save game state after move
+        // Save game state after move (non-blocking)
         this.saveGameState();
     }
 
