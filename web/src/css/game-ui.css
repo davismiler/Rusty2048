@@ -122,6 +122,11 @@
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
     image-rendering: pixelated;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-smooth: never;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
 }
 
 /* 拖拽提示 */
