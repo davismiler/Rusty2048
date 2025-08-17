@@ -122,6 +122,11 @@
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
     image-rendering: pixelated;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-smooth: never;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
 }
 
 /* 拖拽提示 */
@@ -162,13 +167,4 @@
 .message.game-over {
     background: #f65e3b;
     color: #f9f6f2;
-}
-
-.instructions {
-    font-size: 12px;
-    color: #776e65;
-    margin-top: 15px;
-    transition: color 0.3s ease;
-    line-height: 1.4;
-    opacity: 0.8;
 }
