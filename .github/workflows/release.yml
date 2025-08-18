@@ -41,14 +41,18 @@ jobs:
       run: |
         cargo build --release --target ${{ matrix.target }} -p rusty2048-cli
     
-    - name: Create release archive
+    - name: Create release archive (Linux/macOS)
+      if: matrix.os != 'windows-latest'
       run: |
         cd target/${{ matrix.target }}/release
-        if [ "${{ runner.os }}" == "Windows" ]; then
-          7z a rusty2048-cli-${{ matrix.os }}.zip rusty2048.exe
-        else
-          tar -czf rusty2048-cli-${{ matrix.os }}.tar.gz rusty2048
-        fi
+        tar -czf rusty2048-cli-${{ matrix.os }}.tar.gz rusty2048
+    
+    - name: Create release archive (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: pwsh
+      run: |
+        cd target/${{ matrix.target }}/release
+        7z a rusty2048-cli-${{ matrix.os }}.zip rusty2048.exe
     
     - name: Upload release assets
       uses: actions/upload-artifact@v4
