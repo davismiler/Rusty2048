@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Rusty2048 Cargo Publish Script
-# Publishes all packages to crates.io in the correct order
+# Rusty2048 Local Cargo Publish Script
+# For manual publishing and testing (CI uses ci-publish.sh)
 
 set -e
 
@@ -96,8 +96,10 @@ publish_package() {
 
 # Main function
 main() {
-    echo "🎮 Rusty2048 Cargo Publish Script"
-    echo "================================="
+    echo "🎮 Rusty2048 Local Cargo Publish Script"
+    echo "======================================"
+    echo "Note: For automated releases, use GitHub Actions with ci-publish.sh"
+    echo ""
     echo ""
     
     # Check prerequisites
