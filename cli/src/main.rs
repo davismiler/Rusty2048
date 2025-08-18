@@ -24,7 +24,55 @@ use rusty2048_shared::TranslationKey;
 use std::{io, panic};
 use theme::{get_tile_color, get_tile_text_color, hex_to_color, ThemeManager};
 
+fn print_help() {
+    println!("🎮 Rusty2048 CLI - Modern 2048 Game");
+    println!("====================================");
+    println!();
+    println!("Usage:");
+    println!("  rusty2048              Start the game");
+    println!("  rusty2048 --help       Show this help message");
+    println!("  rusty2048 --version    Show version information");
+    println!();
+    println!("Game Controls:");
+    println!("  ↑↓←→ or WASD          Move tiles");
+    println!("  L                     Switch language (English/Chinese)");
+    println!("  T                     Switch theme");
+    println!("  A                     Toggle AI mode");
+    println!("  S                     Show statistics charts");
+    println!("  R                     Start/stop replay");
+    println!("  Q                     Quit game");
+    println!();
+    println!("Features:");
+    println!("  🎯 AI Mode - 3 intelligent algorithms");
+    println!("  🎨 5 beautiful themes");
+    println!("  📊 Detailed statistics charts");
+    println!("  🔄 Game replay system");
+    println!("  🌍 English/Chinese support");
+    println!();
+    println!("More info: https://github.com/honkinglin/rusty2048");
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Check command line arguments
+    let args: Vec<String> = std::env::args().collect();
+    if args.len() > 1 {
+        match args[1].as_str() {
+            "--help" | "-h" => {
+                print_help();
+                return Ok(());
+            }
+            "--version" | "-v" => {
+                println!("rusty2048-cli {}", env!("CARGO_PKG_VERSION"));
+                return Ok(());
+            }
+            _ => {
+                eprintln!("Unknown argument: {}", args[1]);
+                eprintln!("Use --help to see available options");
+                std::process::exit(1);
+            }
+        }
+    }
+
     // Setup terminal
     enable_raw_mode()?;
     let mut stdout = io::stdout();

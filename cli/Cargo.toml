@@ -3,9 +3,16 @@ name = "rusty2048-cli"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
-description = "Command-line interface for Rusty2048"
+description = "Command-line interface for Rusty2048 - A modern 2048 game with AI, themes, and statistics"
 license.workspace = true
 repository.workspace = true
+keywords = ["2048", "game", "cli", "terminal", "puzzle", "ai"]
+categories = ["games", "command-line-utilities"]
+readme = "../README.md"
+
+[[bin]]
+name = "rusty2048"
+path = "src/main.rs"
 
 [dependencies]
 rusty2048-core = { path = "../core" }

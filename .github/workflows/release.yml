@@ -1,0 +1,88 @@
+name: Release CLI Binary
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        target:
+          - x86_64-unknown-linux-gnu
+          - x86_64-apple-darwin
+          - x86_64-pc-windows-msvc
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        target: ${{ matrix.target }}
+        override: true
+    
+    - name: Build CLI
+      run: |
+        cargo build --release --target ${{ matrix.target }} -p rusty2048-cli
+    
+    - name: Create release archive
+      run: |
+        cd target/${{ matrix.target }}/release
+        if [ "${{ runner.os }}" == "Windows" ]; then
+          7z a rusty2048-cli-${{ matrix.os }}.zip rusty2048-cli.exe
+        else
+          tar -czf rusty2048-cli-${{ matrix.os }}.tar.gz rusty2048-cli
+        fi
+    
+    - name: Upload release assets
+      uses: actions/upload-artifact@v3
+      with:
+        name: rusty2048-cli-${{ matrix.os }}
+        path: target/${{ matrix.target }}/release/rusty2048-cli-*.zip
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+      
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          rusty2048-cli-ubuntu-latest/rusty2048-cli-*.tar.gz
+          rusty2048-cli-macos-latest/rusty2048-cli-*.tar.gz
+          rusty2048-cli-windows-latest/rusty2048-cli-*.zip
+        body: |
+          ## 🎮 Rusty2048 CLI v${{ github.ref_name }}
+          
+          ### Installation Methods
+          
+          #### Method 1: Using Cargo (Recommended)
+          ```bash
+          cargo install rusty2048-cli
+          ```
+          
+          #### Method 2: Download Pre-compiled Binaries
+          Download the appropriate file for your operating system:
+          - **Linux**: `rusty2048-cli-ubuntu-latest.tar.gz`
+          - **macOS**: `rusty2048-cli-macos-latest.tar.gz`
+          - **Windows**: `rusty2048-cli-windows-latest.zip`
+          
+          ### Usage
+          ```bash
+          rusty2048
+          ```
+          
+          ### Features
+          - 🎯 AI Mode (3 algorithms)
+          - 🎨 5 themes
+          - 📊 Statistics charts
+          - 🔄 Replay system
+          - 🌍 English/Chinese support
