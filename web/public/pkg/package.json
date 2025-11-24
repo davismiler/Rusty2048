@@ -1,14 +1,14 @@
 {
   "name": "rusty2048-web",
   "collaborators": [
-    "Your Name <your.email@example.com>"
+    "davismiler"
   ],
   "description": "Web interface for Rusty2048",
   "version": "0.1.0",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/rusty2048"
+    "url": "https://github.com/davismiler/rusty2048"
   },
   "files": [
     "rusty2048_web_bg.wasm",

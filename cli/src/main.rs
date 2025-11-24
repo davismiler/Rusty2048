@@ -49,7 +49,7 @@ fn print_help() {
     println!("  🔄 Game replay system");
     println!("  🌍 English/Chinese support");
     println!();
-    println!("More info: https://github.com/honkinglin/rusty2048");
+    println!("More info: https://github.com/davismiler/rusty2048");
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {

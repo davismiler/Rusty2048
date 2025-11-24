@@ -49,25 +49,25 @@ create_formula() {
     cat > Formula/rusty2048-cli.rb << EOF
 class Rusty2048Cli < Formula
   desc "Command-line interface for Rusty2048 - A modern 2048 game with AI, themes, and statistics"
-  homepage "https://github.com/honkinglin/rusty2048"
+  homepage "https://github.com/davismiler/rusty2048"
   version "${version}"
   
   on_macos do
     if Hardware::CPU.arm?
-      url "https://github.com/honkinglin/rusty2048/releases/download/v${version}/rusty2048-cli-macos-aarch64.tar.gz"
+      url "https://github.com/davismiler/rusty2048/releases/download/v${version}/rusty2048-cli-macos-aarch64.tar.gz"
       sha256 "${sha256}"
     else
-      url "https://github.com/honkinglin/rusty2048/releases/download/v${version}/rusty2048-cli-macos-x86_64.tar.gz"
+      url "https://github.com/davismiler/rusty2048/releases/download/v${version}/rusty2048-cli-macos-x86_64.tar.gz"
       sha256 "${sha256}"
     end
   end
   
   on_linux do
     if Hardware::CPU.arm?
-      url "https://github.com/honkinglin/rusty2048/releases/download/v${version}/rusty2048-cli-linux-aarch64.tar.gz"
+      url "https://github.com/davismiler/rusty2048/releases/download/v${version}/rusty2048-cli-linux-aarch64.tar.gz"
       sha256 "${sha256}"
     else
-      url "https://github.com/honkinglin/rusty2048/releases/download/v${version}/rusty2048-cli-linux-x86_64.tar.gz"
+      url "https://github.com/davismiler/rusty2048/releases/download/v${version}/rusty2048-cli-linux-x86_64.tar.gz"
       sha256 "${sha256}"
     end
   end
@@ -116,7 +116,7 @@ main() {
     print_status "Detected system: ${os} ${arch}"
     
     # Download corresponding binary file
-    local download_url="https://github.com/honkinglin/rusty2048/releases/download/v${version}/rusty2048-cli-${os}-${arch}.tar.gz"
+    local download_url="https://github.com/davismiler/rusty2048/releases/download/v${version}/rusty2048-cli-${os}-${arch}.tar.gz"
     local temp_file="rusty2048-cli-${version}.tar.gz"
     
     print_status "Downloading binary file..."
@@ -140,7 +140,7 @@ main() {
     print_status "Next steps:"
     echo "1. Commit Formula/rusty2048-cli.rb to your Homebrew tap repository"
     echo "2. Users can install with:"
-    echo "   brew install honkinglin/tap/rusty2048-cli"
+    echo "   brew install davismiler/tap/rusty2048-cli"
     
     # Clean up temporary file
     rm -f "$temp_file"

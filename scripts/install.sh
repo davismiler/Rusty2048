@@ -63,7 +63,7 @@ download_binary() {
     cd "$temp_dir"
     
     # Download binary for the corresponding platform
-    local download_url="https://github.com/honkinglin/rusty2048/releases/download/v${version}/rusty2048-cli-${os}-${arch}.tar.gz"
+    local download_url="https://github.com/davismiler/rusty2048/releases/download/v${version}/rusty2048-cli-${os}-${arch}.tar.gz"
     
     if curl -L -o rusty2048.tar.gz "$download_url"; then
         tar -xzf rusty2048.tar.gz
@@ -95,7 +95,7 @@ install_with_package_manager() {
         "macos")
             if command -v brew &> /dev/null; then
                 print_status "Installing with Homebrew..."
-                brew install honkinglin/tap/rusty2048-cli
+                brew install davismiler/tap/rusty2048-cli
                 print_success "Installation complete!"
                 return 0
             fi
